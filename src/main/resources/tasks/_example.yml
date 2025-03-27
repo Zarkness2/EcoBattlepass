@@ -7,8 +7,8 @@
 display:
   display-name: Chickens # The display name of the task
   lore: # The lore of the task
-    - "&7Kill chickens"
-    - "&7%current%/%required%"
+    - "&8»&7 Kill chickens"
+    - "&8»&7 Completed: &a%current%&7/&a%required%"
 
 # An XP gain method takes a trigger, a multiplier, conditions, args and filters.
 # The 'multiplier' takes the value produced by the trigger and multiplies it

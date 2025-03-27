@@ -1,8 +1,8 @@
 display:
   display-name: "Glider"
   lore:
-    - "&7Glide %required% blocks"
-    - "&7%current%/%required%"
+    - "&8»&7 Glide &a%required%&7 blocks"
+    - "&8»&7 Completed: &a%current%&7/&a%required%"
 
 xp-gain-methods:
   - trigger: move

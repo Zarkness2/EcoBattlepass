@@ -210,7 +210,7 @@ categories-gui:
 
 # GUI Configuration for the Quests GUI
 quests-gui:
-  title: "Quests of Category %category%: %page%"
+  title: "%category%: %page%"
   mask:
     # The way the mask works is by having a list of materials
     # And then a pattern to use those materials.
@@ -222,30 +222,32 @@ quests-gui:
     # A 2 represents the second material
     # And so on, you can add up to 9.
     materials:
-      - black_stained_glass_pane
+      - black_stained_glass_pane name:" "
     pattern:
       # For this GUI, "q" represents a slot for a quest.
       # Quests are sorted in the order they are in the categories.yml file.
       - "111111111"
       - "1q1q1q1q1"
+      - "11q1q1q11"
+      - "111111111"
       - "111111111"
   next-page:
     item:
       active: orange_stained_glass_pane name:"&aNext page"
-      inactive: gray_stained_glass_pane
+      inactive: black_stained_glass_pane name:" "
     lore:
       active: [ ]
       inactive: [ ]
-    row: 3
+    row: 5
     column: 6
   prev-page:
     item:
       active: orange_stained_glass_pane name:"&aPrevious page"
-      inactive: gray_stained_glass_pane
+      inactive: black_stained_glass_pane name:" "
     lore:
       active: [ ]
       inactive: [ ]
-    row: 3
+    row: 5
     column: 4
 
 # GUI Configuration for the Quest Icon
@@ -256,8 +258,8 @@ quests-icon:
     reset: "Resets in %time%"
     none: "One-Time quest (does not end or reset)"
   tasks-format:
-    - "&a* %task_name%"
-    - "  %task_lore%"
+    - "&a%task_name%"
+    - " %task_lore%"
   tasks-separator: []
   name: "&6%quest_name%" # The name of the quest
   lore:

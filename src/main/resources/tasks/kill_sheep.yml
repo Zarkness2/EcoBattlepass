@@ -1,8 +1,8 @@
 display:
   display-name: "Butcher"
   lore:
-    - "&7Kill %required% sheep"
-    - "&7%current%/%required%"
+    - "&8»&7 Kill &a%required%&7 sheep"
+    - "&8»&7 Completed: &a%current%&7/&a%required%"
 
 xp-gain-methods:
   - trigger: kill

@@ -1,8 +1,8 @@
 display:
   display-name: "Murder Mystery"
   lore:
-    - "&7Kill %required% players in PVP"
-    - "&7%current%/%required%"
+    - "&8»&7 Kill &a%required%&7 players in PVP"
+    - "&8»&7 Completed: &a%current%&7/&a%required%"
 
 xp-gain-methods:
   - trigger: kill

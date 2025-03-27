@@ -1,8 +1,8 @@
 display:
   display-name: "Beekeeper"
   lore:
-    - "&7Harvest %required% honeycombs"
-    - "&7%current%/%required%"
+    - "&8»&7 Harvest &a%required%&7 honeycombs"
+    - "&8»&7 Completed: &a%current%&7/&a%required%"
 
 xp-gain-methods:
   - trigger: click_block
