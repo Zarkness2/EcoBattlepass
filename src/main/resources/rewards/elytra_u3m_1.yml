@@ -5,7 +5,7 @@
 # _example.yml is not loaded.
 
 display:
-  name: "&6Elytra" # The display name of the reward
+  name: "Elytra" # The display name of the reward
   reward-lore:
   - "&7Unbreaking III" # The lore of the reward. This is shown on the tier within %rewards%. Formatting here will override config.yml
   - "&7Mending"

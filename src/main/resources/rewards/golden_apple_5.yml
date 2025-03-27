@@ -5,7 +5,7 @@
 # _example.yml is not loaded.
 
 display:
-  name: "&65x Golden Apple" # The display name of the reward
+  name: "5x Golden Apple" # The display name of the reward
   reward-lore: [] # The lore of the reward. This is shown on the tier within %rewards%. Formatting here will override config.yml
 
 # Effects to run when the battlepass reward is claimed.
