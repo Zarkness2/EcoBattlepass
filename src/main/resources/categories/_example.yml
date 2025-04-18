@@ -1,0 +1,23 @@
+# The ID of the category is the name of the .yml file,
+# for example daily_quests.yml has the ID of daily_quests
+# You can place quests anywhere in this folder,
+# including in subfolders if you want to organize your category configs
+# _example.yml is not loaded.
+
+name: "&8»&e Example Category" # The name of the category
+item: nether_star 1 # The item to display in the GUI
+lore: # The lore of the category
+  - "&a%completed%/%total% Complete"
+
+battlepass: battlepass # The ID of the battlepass this category is assigned to.
+priority: 0 # The priority of the category in the GUI. Categories are sorted by priority, 0 is the highest priority, and will show first.
+start-date: 2025-03-23 00:00 # The date the category starts. Format: YYYY-MM-DD HH:MM
+duration: 100000 # The duration of the category in minutes, set to -1 for no end. This allows you to end/lock categories after a time frame.
+reset-time: 1440 # The amount of minutes between resets. # Set to 1440 for daily resets, set to -1 for no reset.
+
+# The list of Quest ID(s) to be completed.
+# The order of this list is what determines the order within the Category GUI.
+quests:
+ - id: free_daily_quest_1
+ - id: free_daily_quest_2
+ - id: free_daily_quest_3

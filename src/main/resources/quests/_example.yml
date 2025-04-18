@@ -16,5 +16,4 @@ tasks: # The list of tasks
   - id: click_doors # The ID of the task
     xp: 100 # The amount of XP required
 
-
 task-amount: 1 # The amount of tasks that need to be completed
