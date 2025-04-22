@@ -83,7 +83,7 @@ class BattlePass(private val _id: String, val config: Config): Registrable {
 
     val name = config.getFormattedString("name")
 
-    val premiumPerm = config.getFormattedString("premium")
+    val premiumPerm = config.getFormattedString("battlepass.premium-permission")
 
     val openCommand = DynamicPassCommand(this, config.getString("battlepass.command")).apply {
         this.register()
