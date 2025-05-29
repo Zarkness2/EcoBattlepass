@@ -47,16 +47,16 @@ class QuestsGUI(private val player: Player, val category: Category, val page: In
             )
         )
         menu.setSlot(
-            plugin.configYml.getInt("quests-gui.buttons.next-page.row"),
-            plugin.configYml.getInt("quests-gui.buttons.next-page.column"),
+            plugin.configYml.getInt("quests-gui.next-page.row"),
+            plugin.configYml.getInt("quests-gui.next-page.column"),
             nextSlot()
         )
         menu.setSlot(
-            plugin.configYml.getInt("quests-gui.buttons.prev-page.row"),
-            plugin.configYml.getInt("quests-gui.buttons.prev-page.column"),
+            plugin.configYml.getInt("quests-gui.prev-page.row"),
+            plugin.configYml.getInt("quests-gui.prev-page.column"),
             prevSlot()
         )
-        for (config in plugin.configYml.getSubsections("quests-gui.buttons.custom-slots")) {
+        for (config in plugin.configYml.getSubsections("quests-gui.custom-slots")) {
             menu.setSlot(
                 config.getInt("row"),
                 config.getInt("column"),
@@ -82,9 +82,9 @@ class QuestsGUI(private val player: Player, val category: Category, val page: In
         val nextActive = page < getMaxPages()
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("quests-gui.buttons.next-page.item.${getActive(nextActive)}"))
+                Items.lookup(plugin.configYml.getString("quests-gui.next-page.item.${getActive(nextActive)}"))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("quests-gui.buttons.next-page.lore.${getActive(nextActive)}")
+                plugin.configYml.getFormattedStrings("quests-gui.next-page.lore.${getActive(nextActive)}")
             ).build()
         )
         if (nextActive) {
@@ -100,9 +100,9 @@ class QuestsGUI(private val player: Player, val category: Category, val page: In
     private fun prevSlot(): Slot {
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("quests-gui.buttons.prev-page.item.${getActive(true)}"))
+                Items.lookup(plugin.configYml.getString("quests-gui.prev-page.item.${getActive(true)}"))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("quests-gui.buttons.prev-page.lore.${getActive(true)}")
+                plugin.configYml.getFormattedStrings("quests-gui.prev-page.lore.${getActive(true)}")
             ).build()
         )
         builder.onLeftClick { _, _ ->

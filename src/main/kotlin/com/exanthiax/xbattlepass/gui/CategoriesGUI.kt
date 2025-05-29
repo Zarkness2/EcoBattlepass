@@ -45,16 +45,16 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
             )
         )
         menu.setSlot(
-            plugin.configYml.getInt("categories-gui.buttons.next-page.row"),
-            plugin.configYml.getInt("categories-gui.buttons.next-page.column"),
+            plugin.configYml.getInt("categories-gui.next-page.row"),
+            plugin.configYml.getInt("categories-gui.next-page.column"),
             nextSlot()
         )
         menu.setSlot(
-            plugin.configYml.getInt("categories-gui.buttons.prev-page.row"),
-            plugin.configYml.getInt("categories-gui.buttons.prev-page.column"),
+            plugin.configYml.getInt("categories-gui.prev-page.row"),
+            plugin.configYml.getInt("categories-gui.prev-page.column"),
             prevSlot()
         )
-        for (config in plugin.configYml.getSubsections("categories-gui.buttons.custom-slots")) {
+        for (config in plugin.configYml.getSubsections("categories-gui.custom-slots")) {
             menu.setSlot(
                 config.getInt("row"),
                 config.getInt("column"),
@@ -80,9 +80,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         val nextActive = page < getMaxPages()
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("categories-gui.buttons.next-page.item.${getActive(nextActive)}"))
+                Items.lookup(plugin.configYml.getString("categories-gui.next-page.item.${getActive(nextActive)}"))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("categories-gui.buttons.next-page.lore.${getActive(nextActive)}")
+                plugin.configYml.getFormattedStrings("categories-gui.next-page.lore.${getActive(nextActive)}")
             ).build()
         )
         if (nextActive) {
@@ -99,9 +99,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         val prevActive = page > 1 || backButton
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("categories-gui.buttons.prev-page.item.${getActive(prevActive)}"))
+                Items.lookup(plugin.configYml.getString("categories-gui.prev-page.item.${getActive(prevActive)}"))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("categories-gui.buttons.prev-page.lore.${getActive(prevActive)}")
+                plugin.configYml.getFormattedStrings("categories-gui.prev-page.lore.${getActive(prevActive)}")
             ).build()
         )
         if (prevActive) {
