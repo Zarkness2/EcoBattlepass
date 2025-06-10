@@ -91,7 +91,6 @@ class QuestsGUI(private val player: Player, val category: Category, val page: In
 
         if (nextActive) {
             builder.onLeftClick { _, _ ->
-                SoundUtils.playIfEnabled(player, "quests-gui.click-sound")
                 QuestsGUI(player, category, page + 1, wasBack = wasBack).open()
             }
         }
@@ -110,7 +109,6 @@ class QuestsGUI(private val player: Player, val category: Category, val page: In
 
         if (prevActive) {
             builder.onLeftClick { _, _ ->
-                SoundUtils.playIfEnabled(player, "quests-gui.click-sound")
                 when {
                     page > 1 -> QuestsGUI(player, category, page - 1, wasBack = wasBack).open()
                     wasBack -> CategoriesGUI(player, category.battlepass, backButton = wasBack).open()

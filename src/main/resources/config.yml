@@ -52,12 +52,6 @@ battlepass-gui:
         row: 2
         column: 6
 
-    click-sound:
-      enabled: true
-      sound: ui_button_click
-      volume: 1
-      pitch: 1
-
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
     custom-slots: [ ]
 
@@ -166,12 +160,6 @@ tiers-gui:
         - ""
         - "&aCLAIMED"
 
-    click-sound:
-      enabled: true
-      sound: ui_button_click
-      volume: 1
-      pitch: 1
-
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
     custom-slots: [ ]
 
@@ -217,12 +205,6 @@ categories-gui:
     row: 5
     column: 4
 
-  click-sound:
-    enabled: true
-    sound: ui_button_click
-    volume: 1
-    pitch: 1
-
   # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
   custom-slots: [ ]
 
@@ -267,12 +249,6 @@ quests-gui:
       inactive: [ ]
     row: 5
     column: 4
-
-  click-sound:
-    enabled: true
-    sound: ui_button_click
-    volume: 1
-    pitch: 1
 
   # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
   custom-slots: [ ]
@@ -323,5 +299,10 @@ sound:
   quest-complete:
     enabled: true
     sound: block.anvil.use
+    volume: 1
+    pitch: 1
+  gui-click-sound:
+    enabled: true
+    sound: ui_button_click
     volume: 1
     pitch: 1

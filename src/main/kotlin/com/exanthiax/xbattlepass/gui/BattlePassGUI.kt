@@ -44,7 +44,7 @@ object BattlePassGUI {
                         .build()
                 ) {
                     onLeftClick { _, _ ->
-                        SoundUtils.playIfEnabled(player, "battlepass-gui.buttons.click-sound")
+                        SoundUtils.playIfEnabled(player, "sound.gui-click-sound")
                         BattleTiersGUI.createAndOpen(player, pass, true)
                     }
                 }
@@ -62,7 +62,7 @@ object BattlePassGUI {
                         .build()
                 ) {
                     onLeftClick { _, _ ->
-                        SoundUtils.playIfEnabled(player, "battlepass-gui.buttons.click-sound")
+                        SoundUtils.playIfEnabled(player, "sound.gui-click-sound")
                         CategoriesGUI(player, pass, backButton = true).open()
                     }
                 }

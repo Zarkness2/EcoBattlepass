@@ -51,7 +51,6 @@ object BattleTiersGUI {
                             .build()
                     ) {
                         onLeftClick { _, _ ->
-                            SoundUtils.playIfEnabled(player, "tiers-gui.buttons.click-sound")
                             BattlePassGUI.createAndOpen(player, pass) }
                     }
                 )
@@ -88,7 +87,6 @@ object BattleTiersGUI {
                         .build()
                 ) {
                     onLeftClick { event, _ ->
-                        SoundUtils.playIfEnabled(player, "tiers-gui.buttons.click-sound")
                         event.whoClicked.closeInventory() }
                 }
             )

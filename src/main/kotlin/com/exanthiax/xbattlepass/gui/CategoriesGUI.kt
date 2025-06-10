@@ -88,7 +88,6 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         )
         if (nextActive) {
             builder.onLeftClick { _, _ ->
-                SoundUtils.playIfEnabled(player, "categories-gui.click-sound")
                 CategoriesGUI(player, pass, page + 1, backButton).open()
             }
         }
@@ -107,7 +106,6 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
 
         if (prevActive) {
             builder.onLeftClick { _, _ ->
-                SoundUtils.playIfEnabled(player, "categories-gui.click-sound")
                 when {
                     page > 1 -> CategoriesGUI(player, pass, page - 1, backButton).open()
                     backButton -> BattlePassGUI.createAndOpen(player, pass)
@@ -127,7 +125,7 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         return Slot.builder(itemBuilder.build())
             .onLeftClick { _, _, _ ->
                 if (pair.isActive) {
-                    SoundUtils.playIfEnabled(player, "categories-gui.click-sound")
+                    SoundUtils.playIfEnabled(player, "sound.gui-click-sound")
                     QuestsGUI(player, pair, wasBack = backButton).open()
                 }
             }
