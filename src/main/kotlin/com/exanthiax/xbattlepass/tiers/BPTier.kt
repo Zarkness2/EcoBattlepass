@@ -1,6 +1,7 @@
 package com.exanthiax.xbattlepass.tiers
 
 import com.exanthiax.xbattlepass.api.getPassExp
+import com.exanthiax.xbattlepass.api.hasPremium
 import com.exanthiax.xbattlepass.battlepass.BattlePass
 import com.exanthiax.xbattlepass.battlepass.BattlePasses
 import com.exanthiax.xbattlepass.plugin
@@ -111,10 +112,12 @@ class BPTier(val config: Config, val battlepass: BattlePass) {
                         if (isFormatted(rewardLine)) {
                             result.add(string.replace("%premium-rewards%", rewardLine))
                         } else {
+                            val key = if (player.hasPremium(battlepass)) "premium-rewards-format"
+                            else "missing-premium-rewards-format"
                             result.add(
                                 string.replace(
                                     "%premium-rewards%",
-                                    plugin.configYml.getFormattedString("tiers-gui.buttons.premium-rewards-format")
+                                    plugin.configYml.getFormattedString("tiers-gui.buttons.$key")
                                         .replace("%reward%", rewardLine)
                                 )
                             )

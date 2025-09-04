@@ -127,6 +127,7 @@ tiers-gui:
 
     free-rewards-format: "&8»&r &9%reward%"
     premium-rewards-format: "&8»&r &6%reward%"
+    missing-premium-rewards-format: "&8»&r &6&m%reward%"
     empty-rewards-format: ""
 
     # Available Placeholders:
