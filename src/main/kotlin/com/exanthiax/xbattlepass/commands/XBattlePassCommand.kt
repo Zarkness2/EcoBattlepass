@@ -13,6 +13,7 @@ object XBattlePassCommand: PluginCommand(
     init {
         this.addSubcommand(QuestsCommand)
             .addSubcommand(ReloadCommand)
+            .addSubcommand(CompleteTaskCommand)
             .addSubcommand(ResetCommand)
             .addSubcommand(GiveCommand)
             .addSubcommand(TiersCommand)
