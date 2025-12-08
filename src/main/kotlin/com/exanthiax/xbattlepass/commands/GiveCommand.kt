@@ -177,21 +177,21 @@ object GiveCommand: PluginCommand(
         return when (args.size) {
             1 -> StringUtil.copyPartialMatches(args[0], Bukkit.getOnlinePlayers().map { it.name } + "all", mutableListOf())
             2 -> StringUtil.copyPartialMatches(args[1], BattlePasses.values().map { it.id }, mutableListOf())
-            3 -> StringUtil.copyPartialMatches(args[2], listOf("xp", "tier", "task-xp"), mutableListOf())
+            3 -> StringUtil.copyPartialMatches(args[2], listOf("xp", "tier", "task_xp"), mutableListOf())
             4 -> when (args.getOrNull(2)?.lowercase()) {
-                "task-xp", "taskxp" -> Categories.values().map { it.id }
+                "task_xp", "task-xp", "taskxp" -> Categories.values().map { it.id }
                 else -> listOf("1", "10", "100", "1000")
             }
-            5 -> if (args.getOrNull(2)?.lowercase() in listOf("task-xp", "taskxp")) {
+            5 -> if (args.getOrNull(2)?.lowercase() in listOf("task_xp", "task-xp", "taskxp")) {
                 val cat = Categories.getByID(args[3]) ?: return emptyList()
                 cat.quests.map { it.parent.id }
             } else emptyList()
-            6 -> if (args.getOrNull(2)?.lowercase() in listOf("task-xp", "taskxp")) {
+            6 -> if (args.getOrNull(2)?.lowercase() in listOf("task_xp", "task-xp", "taskxp")) {
                 val cat = Categories.getByID(args[3]) ?: return emptyList()
                 val quest = cat.quests.find { it.parent.id.equals(args[4], true) } ?: return emptyList()
                 quest.tasks.map { it.parent.id }
             } else emptyList()
-            7 -> if (args.getOrNull(2)?.lowercase() in listOf("task-xp", "taskxp"))
+            7 -> if (args.getOrNull(2)?.lowercase() in listOf("task_xp", "task-xp", "taskxp"))
                 listOf("1", "10", "100", "1000") else emptyList()
             else -> emptyList()
         }.let { StringUtil.copyPartialMatches(args.last(), it, mutableListOf()) }
