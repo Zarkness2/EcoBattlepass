@@ -4,6 +4,8 @@ import com.exanthiax.xbattlepass.api.getTier
 import com.exanthiax.xbattlepass.battlepass.BattlePass
 import com.exanthiax.xbattlepass.gui.components.BattleTierComponent
 import com.exanthiax.xbattlepass.plugin
+import com.exanthiax.xbattlepass.tiers.BPTier
+import com.exanthiax.xbattlepass.utils.InternalPlaceholders
 import com.willfp.eco.core.gui.menu
 import com.willfp.eco.core.gui.menu.MenuLayer
 import com.willfp.eco.core.gui.page.PageChanger
@@ -91,11 +93,27 @@ object BattleTiersGUI {
                     }
                 )
 
-            for (config in plugin.configYml.getSubsections("tiers-gui.buttons.custom-slots")) {
+            for (slotConfig in plugin.configYml.getSubsections("tiers-gui.buttons.custom-slots")) {
+                val resolved = slotConfig.clone().apply {
+                    fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(
+                        s,
+                        player = player,
+                        battlepass = pass
+                    )
+
+                    set("item", r(getString("item")))
+                    set("lore", getStrings("lore").map(::r))
+                    listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
+                        if (this.has(click)) {
+                            this.set(click, this.getStrings(click).map(::r))
+                        }
+                    }
+                }
+
                 setSlot(
-                    config.getInt("row"),
-                    config.getInt("column"),
-                    ConfigSlot(config)
+                    resolved.getInt("row"),
+                    resolved.getInt("column"),
+                    ConfigSlot(resolved)
                 )
             }
         }

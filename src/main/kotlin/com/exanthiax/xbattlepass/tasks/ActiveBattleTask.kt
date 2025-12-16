@@ -4,6 +4,7 @@ import com.exanthiax.xbattlepass.api.*
 import com.exanthiax.xbattlepass.api.events.PlayerTaskExpGainEvent
 import com.exanthiax.xbattlepass.plugin
 import com.exanthiax.xbattlepass.quests.ActiveBattleQuest
+import com.exanthiax.xbattlepass.utils.InternalPlaceholders
 import com.willfp.eco.core.config.interfaces.Config
 import com.willfp.eco.core.data.keys.PersistentDataKey
 import com.willfp.eco.core.data.keys.PersistentDataKeyType
@@ -53,15 +54,6 @@ class ActiveBattleTask(val config: Config, val quest: ActiveBattleQuest) {
         }
     }
 
-    private fun replaceBasicPlaceholders(input: String, player: Player): String {
-        return input
-            .replace("%task_name%", this.parent.name)
-            .replace("%current_task_xp%", player.taskProgress(this).toNiceString())
-            .replace("%current_task_xp_formatted%", player.taskProgress(this).formatWithCommas())
-            .replace("%required_task_xp%", this.requiredXP.toNiceString())
-            .replace("%required_task_xp_formatted%", this.requiredXP.formatWithCommas())
-    }
-
     fun gainExperience(player: Player, count: Double) {
         val event = PlayerTaskExpGainEvent(player, this, count)
         Bukkit.getPluginManager().callEvent(event)
@@ -78,15 +70,8 @@ class ActiveBattleTask(val config: Config, val quest: ActiveBattleQuest) {
 
     fun getDisplayItem(player: Player): ItemStack {
         return ItemStackBuilder(parent.testable)
-            .setDisplayName(
-                replaceBasicPlaceholders(parent.name, player)
-                    .formatEco(formatPlaceholders = true)
-            )
-            .addLoreLines(
-                parent.lore
-                    .map { replaceBasicPlaceholders(it, player) }
-                    .formatEco(formatPlaceholders = true)
-            )
+            .setDisplayName(InternalPlaceholders.TaskPlaceholders.replace(parent.name, this, player))
+            .addLoreLines(InternalPlaceholders.TaskPlaceholders.replaceAll(parent.lore, this, player))
             .build()
     }
 
@@ -97,11 +82,11 @@ class ActiveBattleTask(val config: Config, val quest: ActiveBattleQuest) {
         for (line in tasksFormat) {
             when {
                 line.contains("%task_name%", ignoreCase = true) -> {
-                    result.add(line.replace("%task_name%", replaceBasicPlaceholders(this.parent.name, player)))
+                    result.add(InternalPlaceholders.TaskPlaceholders.replace(line, this, player))
                 }
                 line.contains("%task_lore%", ignoreCase = true) -> {
                     for (loreLine in this.parent.lore) {
-                        result.add(line.replace("%task_lore%", replaceBasicPlaceholders(loreLine, player)))
+                        result.add(InternalPlaceholders.TaskPlaceholders.replace(line.replace("%task_lore%", loreLine), this, player))
                     }
                 }
                 else -> {

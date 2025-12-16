@@ -1,9 +1,11 @@
 package com.exanthiax.xbattlepass.gui
 
+import com.exanthiax.xbattlepass.api.getPassExp
 import com.exanthiax.xbattlepass.api.getTier
 import com.exanthiax.xbattlepass.battlepass.BattlePass
 import com.exanthiax.xbattlepass.plugin
 import com.exanthiax.xbattlepass.tiers.BPTier
+import com.exanthiax.xbattlepass.utils.InternalPlaceholders
 import com.exanthiax.xbattlepass.utils.SoundUtils
 import com.willfp.eco.core.gui.menu
 import com.willfp.eco.core.gui.slot
@@ -13,7 +15,11 @@ import com.willfp.eco.core.gui.slot.MaskItems
 import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.ItemStackBuilder
 import com.willfp.eco.util.formatEco
+import com.willfp.eco.util.formatWithCommas
+import com.willfp.eco.util.toNiceString
+import com.willfp.eco.util.toNumeral
 import org.bukkit.entity.Player
+import java.time.format.DateTimeFormatter
 
 object BattlePassGUI {
     fun createAndOpen(player: Player, pass: BattlePass) {
@@ -86,11 +92,27 @@ object BattlePassGUI {
                 )
             }
 
-            for (config in plugin.configYml.getSubsections("battlepass-gui.buttons.custom-slots")) {
+            for (slotConfig in plugin.configYml.getSubsections("battlepass-gui.buttons.custom-slots")) {
+                val resolved = slotConfig.clone().apply {
+                    fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(
+                        s,
+                        player = player,
+                        battlepass = pass
+                    )
+
+                    set("item", r(getString("item")))
+                    set("lore", getStrings("lore").map(::r))
+                    listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
+                        if (this.has(click)) {
+                            this.set(click, this.getStrings(click).map(::r))
+                        }
+                    }
+                }
+
                 setSlot(
-                    config.getInt("row"),
-                    config.getInt("column"),
-                    ConfigSlot(config)
+                    resolved.getInt("row"),
+                    resolved.getInt("column"),
+                    ConfigSlot(resolved)
                 )
             }
         }

@@ -6,13 +6,10 @@ import com.exanthiax.xbattlepass.battlepass.BattlePass
 import com.exanthiax.xbattlepass.battlepass.BattlePasses
 import com.exanthiax.xbattlepass.plugin
 import com.exanthiax.xbattlepass.rewards.Rewards
+import com.exanthiax.xbattlepass.utils.InternalPlaceholders
 import com.willfp.eco.core.config.interfaces.Config
 import com.willfp.eco.util.formatEco
-import com.willfp.eco.util.formatWithCommas
-import com.willfp.eco.util.toNiceString
-import com.willfp.eco.util.toNumeral
 import org.bukkit.entity.Player
-import java.time.format.DateTimeFormatter
 
 class BPTier(val config: Config, val battlepass: BattlePass) {
     constructor(num: Int, battlepass: BattlePass) : this(
@@ -44,38 +41,6 @@ class BPTier(val config: Config, val battlepass: BattlePass) {
 
         return result.formatEco(player, true)
     }
-
-    private fun replaceBasicPlaceholders(input: String, player: Player): String {
-        var result = input
-            .replace("%pass%", battlepass.name)
-            .replace("%claimable_tiers%", battlepass.getClaimable(player).toNiceString())
-            .replace("%max_tiers%", battlepass.maxLevel.toNiceString())
-            .replace("%pass_type%", plugin.langYml.getString(if (player.hasPermission(battlepass.premiumPerm)) "pass-type.premium" else "pass-type.free"))
-            .replace("%start_date%", battlepass.startDate.format(DateTimeFormatter.ofPattern(plugin.configYml.getString("date-format"))))
-            .replace("%end_date%", battlepass.endDate.format(DateTimeFormatter.ofPattern(plugin.configYml.getString("date-format"))))
-            .replace("%percentage_progress%", battlepass.getFormattedProgress(player))
-            .replace("%current_bp_xp%", player.getPassExp(battlepass).toNiceString())
-            .replace("%current_bp_xp_formatted%", player.getPassExp(battlepass).formatWithCommas())
-            .replace("%required_bp_xp%", battlepass.getFormattedRequired(player))
-            .replace("%required_bp_xp_formatted%", battlepass.getFormattedRequired(player).toDouble().formatWithCommas())
-            .replace("%tier%", this.number.toNiceString())
-            .replace("%tier_numeral%", this.number.toNumeral())
-            .replace("%next_tier%", (this.number + 1).toNiceString())
-            .replace("%next_tier_numeral%", (this.number + 1).toNumeral())
-
-        val regex = Regex("%tier_(-?\\d+)(_numeral)?%")
-
-        result = regex.replace(result) { match ->
-            val offset = match.groupValues[1].toIntOrNull() ?: return@replace match.value
-            val isNumeral = match.groupValues[2].isNotEmpty()
-            val newTier = this.number + offset
-
-            if (isNumeral) newTier.toNumeral() else newTier.toNiceString()
-        }
-
-        return result
-    }
-
 
     fun isFormatted(line: String): Boolean {
         return line.startsWith("&") || line.startsWith("§")
@@ -112,7 +77,7 @@ class BPTier(val config: Config, val battlepass: BattlePass) {
                     "%claimed-premium-rewards%", "tiers-gui.buttons.claimed-premium-rewards-format"
                 )
 
-                else -> result.add(replaceBasicPlaceholders(string, player))
+                else -> result.add(InternalPlaceholders.TierPlaceholders.replace(string, this, battlepass, player))
             }
         }
 

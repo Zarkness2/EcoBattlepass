@@ -12,6 +12,7 @@ import org.bukkit.entity.Player
 import com.exanthiax.xbattlepass.categories.Category
 import com.exanthiax.xbattlepass.plugin
 import com.exanthiax.xbattlepass.quests.ActiveBattleQuest
+import com.exanthiax.xbattlepass.utils.InternalPlaceholders
 import com.exanthiax.xbattlepass.utils.SoundUtils
 
 class QuestsGUI(private val player: Player, val category: Category, val page: Int = 1,
@@ -57,11 +58,27 @@ class QuestsGUI(private val player: Player, val category: Category, val page: In
             plugin.configYml.getInt("quests-gui.buttons.prev-page.column"),
             prevSlot()
         )
-        for (config in plugin.configYml.getSubsections("quests-gui.buttons.custom-slots")) {
+        for (slotConfig in plugin.configYml.getSubsections("quests-gui.buttons.custom-slots")) {
+            val resolved = slotConfig.clone().apply {
+                fun r(s: String) = InternalPlaceholders.CategoryPlaceholders.replace(
+                    s,
+                    player = player,
+                    category = category
+                )
+
+                set("item", r(getString("item")))
+                set("lore", getStrings("lore").map(::r))
+                listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
+                    if (this.has(click)) {
+                        this.set(click, this.getStrings(click).map(::r))
+                    }
+                }
+            }
+
             menu.setSlot(
-                config.getInt("row"),
-                config.getInt("column"),
-                ConfigSlot(config)
+                resolved.getInt("row"),
+                resolved.getInt("column"),
+                ConfigSlot(resolved)
             )
         }
         if (plugin.configYml.getBool("quests-gui.buttons.close.enabled")) {

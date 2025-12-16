@@ -6,6 +6,7 @@ import com.exanthiax.xbattlepass.battlepass.BattlePasses
 import com.exanthiax.xbattlepass.msToString
 import com.exanthiax.xbattlepass.plugin
 import com.exanthiax.xbattlepass.quests.ActiveBattleQuest
+import com.exanthiax.xbattlepass.utils.InternalPlaceholders
 import com.willfp.eco.core.config.interfaces.Config
 import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.ItemStackBuilder
@@ -76,18 +77,14 @@ class Category(private val _id: String, val config: Config): Registrable {
         }.register()
     }
 
-    override fun getID(): String {
-        return _id
-    }
+    override fun getID(): String = _id
 
     val battlepass: BattlePass
         get() = BattlePasses.getByID(config.getString("battlepass"))!!
 
     val name = config.getString("name")
     val title = config.getString("gui-title")
-
     val item = Items.lookup(config.getString("item"))
-
     val unformattedLore = config.getStrings("lore")
 
     val startDate = run {
@@ -97,51 +94,34 @@ class Category(private val _id: String, val config: Config): Registrable {
         LocalDateTime.parse(dateTimeString, formatter)
     }
 
-    val quests = config.getSubsections("quests").map {
-        ActiveBattleQuest(it, this)
-    }
+    val quests = config.getSubsections("quests").map { ActiveBattleQuest(it, this) }
 
     val endDate = run {
         val duration = config.getInt("duration")
-        if (duration <= 0) {
-            return@run null
-        }
-        startDate.plusMinutes(config.getInt("duration").toLong())
+        if (duration <= 0) return@run null
+        startDate.plusMinutes(duration.toLong())
     }
 
     val resetTimer = config.getInt("reset-time").toLong() * 60000L
 
-    fun getCompleted(player: Player): Int {
-        return this.quests.count { player.hasCompletedQuest(it) }
-    }
+    fun getCompleted(player: Player): Int = this.quests.count { player.hasCompletedQuest(it) }
 
     fun getNextResetDate(): LocalDateTime? {
         if (resetTimer <= 0) return null
-
         var current = startDate
-
-        while(true) {
+        while (true) {
             current = current.plusNanos(resetTimer * 1_000_000L)
-            if (current.isAfter(LocalDateTime.now())) {
-                return current
-            }
+            if (current.isAfter(LocalDateTime.now())) return current
         }
     }
 
     fun getDisplayItem(player: Player): ItemStack {
         val key = this.getDisplayableStatusKey()
         val formattedTime = msToString(this.getDisplayableMs())
+
         return ItemStackBuilder(item.item.clone())
-            .setDisplayName(name.replace("%completed%", getCompleted(player).toString())
-                .replace("%total%", this.quests.size.toString()).formatEco(formatPlaceholders = true))
-            .addLoreLines(unformattedLore
-                .map {
-                    it.replace("%completed%", getCompleted(player).toString())
-                        .replace("%total%", this.quests.size.toString())
-                        .replace("%time%", this.config.getString("timer-format.$key")
-                            .replace("%time%", formattedTime))
-                }
-                .formatEco(formatPlaceholders = true))
+            .setDisplayName(InternalPlaceholders.CategoryPlaceholders.replace(name, this, player))
+            .addLoreLines(InternalPlaceholders.CategoryPlaceholders.replaceAll(unformattedLore, this, player))
             .build()
     }
 
@@ -164,21 +144,15 @@ class Category(private val _id: String, val config: Config): Registrable {
     fun getDisplayableStatusKey(): String {
         return if (this.isActive) {
             val resetDate = getNextResetDate()
-            if (resetDate != null && (endDate == null || resetDate.isBefore(endDate))) {
-                "reset"
-            } else if (endDate != null) {
-                "end"
-            } else "none"
+            if (resetDate != null && (endDate == null || resetDate.isBefore(endDate))) "reset"
+            else if (endDate != null) "end"
+            else "none"
         } else "start"
     }
 
     fun isToReset(): Boolean {
-        if (resetTimer <= 0) {
-            return false
-        }
-
+        if (resetTimer <= 0) return false
         val nextReset = getNextResetDate()!!
-
         return nextReset.isBefore(LocalDateTime.now()) || nextReset == LocalDateTime.now()
     }
 
@@ -191,8 +165,8 @@ class Category(private val _id: String, val config: Config): Registrable {
     }
 
     val isActive: Boolean
-        get() = this.battlepass.isActive && LocalDateTime.now().isAfter(startDate)
-                && (endDate == null || LocalDateTime.now().isBefore(endDate))
+        get() = this.battlepass.isActive && LocalDateTime.now().isAfter(startDate) &&
+                (endDate == null || LocalDateTime.now().isBefore(endDate))
 
     var consideredActive: Boolean = isActive
 }
