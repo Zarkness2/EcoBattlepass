@@ -111,7 +111,7 @@ object InternalPlaceholders {
     object TaskPlaceholders {
         fun replace(input: String, task: ActiveBattleTask, player: Player): String {
             return input
-                .replace("%task_name%", task.parent.name)
+                .replace("%task%", task.parent.name)
                 .replace("%task_id%", task.parent.id)
                 .replace("%current_task_xp%", player.taskProgress(task).toNiceString())
                 .replace("%current_task_xp_formatted%", player.taskProgress(task).formatWithCommas())

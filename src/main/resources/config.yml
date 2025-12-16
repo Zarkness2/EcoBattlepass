@@ -45,6 +45,9 @@ battlepass-gui:
         row: 2
         column: 4
 
+    # List of available placeholders:
+    # https://exanthiax.gitbook.io/xbattlepass/useful/internal-placeholders#battlepass-and-category-gui
+
     quests:
       item: orange_stained_glass_pane
       name: "&6Quests"
@@ -136,26 +139,8 @@ tiers-gui:
     claimed-free-rewards-format: "&a&l✔ &9%reward%"
     claimed-premium-rewards-format: "&a&l✔ &6%reward%"
 
-    # Available Placeholders:
-    # %pass% - The name of the battlepass
-    # %claimable_tiers% - The amount of tiers that can be claimed
-    # %max_tiers% - The total amount of tiers in the battlepass
-    # %pass_type% - The type of battlepass (Free, Premium)
-    # %start_date% - The start date of the battlepass
-    # %end_date% - The end date of the battlepass
-    # %percentage_progress% - The percentage of the tier XP progress
-    # %current_bp_xp% - The current battlepass XP
-    # %current_bp_xp_formatted% - The current battlepass XP formatted with commas
-    # %required_bp_xp% - The required battlepass XP for the next tier
-    # %required_bp_xp_formatted% - The required battlepass XP formatted with commas
-    # %tier% - The tier number
-    # %tier_numeral% - The tier number in Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X)
-    # %tier_x% - The tier number with an offset (e.g. if %tier% = 5, then %tier_2% = 7, %tier_-2% = 3)
-    # %tier_x_numeral% - The tier number in Roman numerals with an offset (e.g. if %tier_numeral% = V, then %tier_2_numeral% = VII, %tier_-2_numeral% = III)
-    # %free-rewards% - The free rewards for the tier
-    # %premium-rewards% - The premium rewards for the tier
-    # %claimed-free-rewards% - The claimed free rewards for the tier
-    # %claimed-premium-rewards% - The claimed premium rewards for the tier
+    # List of available placeholders:
+    # https://exanthiax.gitbook.io/xbattlepass/useful/internal-placeholders#battlepass-tiers-gui
 
     # The different states a tier can be in
     # When only the free rewards are claimable.
@@ -291,6 +276,9 @@ categories-gui:
       row: 5
       column: 5
 
+    # List of available placeholders:
+    # https://exanthiax.gitbook.io/xbattlepass/useful/internal-placeholders#battlepass-and-category-gui
+
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
     custom-slots: [ ]
 
@@ -344,6 +332,9 @@ quests-gui:
       row: 5
       column: 5
 
+    # List of available placeholders:
+    # https://exanthiax.gitbook.io/xbattlepass/useful/internal-placeholders#quest-gui
+
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
     custom-slots: [ ]
 
@@ -355,7 +346,7 @@ quests-icon:
     reset: "Resets in %time%"
     none: "One-Time quest (does not end or reset)"
   tasks-format:
-    - "&a%task_name%"
+    - "&a%task%"
     - " %task_lore%"
   tasks-separator: []
   name: "&6%quest_name%" # The name of the quest
