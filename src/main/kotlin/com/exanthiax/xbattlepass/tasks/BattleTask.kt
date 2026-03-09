@@ -7,7 +7,7 @@ import com.willfp.eco.core.registry.Registrable
 import com.willfp.libreforge.ViolationContext
 import com.willfp.libreforge.counters.Counters
 
-class BattleTask(private val _id: String, val config: Config): Registrable {
+class BattleTask(private val _id: String, val config: Config) : Registrable {
     override fun getID(): String {
         return this._id
     }

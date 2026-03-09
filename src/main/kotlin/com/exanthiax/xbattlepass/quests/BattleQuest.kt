@@ -6,7 +6,7 @@ import com.exanthiax.xbattlepass.tiers.Tiered
 import com.willfp.eco.core.config.interfaces.Config
 import com.willfp.eco.core.registry.Registrable
 
-class BattleQuest(private val _id: String, val config: Config): Registrable, Tiered {
+class BattleQuest(private val _id: String, val config: Config) : Registrable, Tiered {
     override fun getID(): String {
         return _id
     }
@@ -27,9 +27,11 @@ class BattleQuest(private val _id: String, val config: Config): Registrable, Tie
 
     val taskAmount = config.getInt("task-amount")
 
-    val tasks = config.getSubsections("tasks").mapNotNull { PreparedBattleTask(
-        it
-    ) }
+    val tasks = config.getSubsections("tasks").mapNotNull {
+        PreparedBattleTask(
+            it
+        )
+    }
 }
 
 data class PreparedBattleTask(val config: Config) {

@@ -3,10 +3,10 @@ package com.exanthiax.xbattlepass.categories
 import com.exanthiax.xbattlepass.api.hasCompletedQuest
 import com.exanthiax.xbattlepass.battlepass.BattlePass
 import com.exanthiax.xbattlepass.battlepass.BattlePasses
-import com.exanthiax.xbattlepass.msToString
 import com.exanthiax.xbattlepass.plugin
 import com.exanthiax.xbattlepass.quests.ActiveBattleQuest
 import com.exanthiax.xbattlepass.utils.InternalPlaceholders
+import com.exanthiax.xbattlepass.utils.msToString
 import com.willfp.eco.core.config.interfaces.Config
 import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.ItemStackBuilder
@@ -17,10 +17,11 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.min
 
-class Category(private val _id: String, val config: Config): Registrable {
+class Category(private val _id: String, val config: Config) : Registrable {
     init {
         PlayerlessPlaceholder(plugin, "category_${id}_start_date") {
             val pattern = plugin.configYml.getString("date-format")
@@ -29,7 +30,7 @@ class Category(private val _id: String, val config: Config): Registrable {
         }.register()
 
         PlayerlessPlaceholder(plugin, "category_${id}_start_timer") {
-            val millisLeft = startDate.atZone(java.time.ZoneId.systemDefault()).toInstant()
+            val millisLeft = startDate.atZone(ZoneId.systemDefault()).toInstant()
                 .toEpochMilli() - System.currentTimeMillis()
             if (millisLeft <= 0) {
                 plugin.langYml.getFormattedString("category-in-progress")
@@ -49,7 +50,7 @@ class Category(private val _id: String, val config: Config): Registrable {
             if (duration == -1) {
                 plugin.langYml.getFormattedString("infinity")
             } else {
-                val millisLeft = endDate!!.atZone(java.time.ZoneId.systemDefault()).toInstant()
+                val millisLeft = endDate!!.atZone(ZoneId.systemDefault()).toInstant()
                     .toEpochMilli() - System.currentTimeMillis()
                 if (millisLeft <= 0) {
                     plugin.langYml.getFormattedString("category-expired")
@@ -66,7 +67,7 @@ class Category(private val _id: String, val config: Config): Registrable {
             } else {
                 val nextReset = this.getNextResetDate()
                 if (nextReset != null) {
-                    val millisLeft = nextReset.atZone(java.time.ZoneId.systemDefault()).toInstant()
+                    val millisLeft = nextReset.atZone(ZoneId.systemDefault()).toInstant()
                         .toEpochMilli() - System.currentTimeMillis()
                     msToString(millisLeft.coerceAtLeast(0))
                 } else {
@@ -86,7 +87,7 @@ class Category(private val _id: String, val config: Config): Registrable {
     val item = Items.lookup(config.getString("item"))
     val unformattedLore = config.getStrings("lore")
 
-    val startDate = run {
+    val startDate: LocalDateTime = run {
         val dateTimeString = config.getString("start-date")
         val pattern = plugin.configYml.getString("date-format")
         val formatter = DateTimeFormatter.ofPattern(pattern)
@@ -115,8 +116,8 @@ class Category(private val _id: String, val config: Config): Registrable {
     }
 
     fun getDisplayItem(player: Player): ItemStack {
-        val key = this.getDisplayableStatusKey()
-        val formattedTime = msToString(this.getDisplayableMs())
+        //val key = this.getDisplayableStatusKey()
+        //val formattedTime = msToString(this.getDisplayableMs())
 
         return ItemStackBuilder(item.item.clone())
             .setDisplayName(InternalPlaceholders.CategoryPlaceholders.replace(name, this, player))
@@ -127,8 +128,10 @@ class Category(private val _id: String, val config: Config): Registrable {
     fun getDisplayableMs(): Long {
         return if (this.isActive) {
             if (resetTimer > 0) {
-                val nextDate = min(getNextResetDate()!!.toInstant(OffsetDateTime.now().offset).toEpochMilli(),
-                    endDate?.toInstant(OffsetDateTime.now().offset)?.toEpochMilli() ?: Long.MAX_VALUE)
+                val nextDate = min(
+                    getNextResetDate()!!.toInstant(OffsetDateTime.now().offset).toEpochMilli(),
+                    endDate?.toInstant(OffsetDateTime.now().offset)?.toEpochMilli() ?: Long.MAX_VALUE
+                )
                 nextDate - System.currentTimeMillis()
             } else {
                 val nextDate = endDate?.toInstant(OffsetDateTime.now().offset)?.toEpochMilli() ?: Long.MAX_VALUE

@@ -119,7 +119,7 @@ class BPTier(val config: Config, val battlepass: BattlePass) {
     }
 }
 
-class BPReward(val config: Config): Tiered {
+class BPReward(val config: Config) : Tiered {
     val reward
         get() = Rewards.getByID(config.getString("id"))
             ?: throw IllegalArgumentException("Could not find reward with id ${config.getString("id")}")

@@ -13,7 +13,7 @@ import com.willfp.libreforge.triggers.TriggerData
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
-class Reward(private val _id: String, val config: Config): Registrable {
+class Reward(private val _id: String, val config: Config) : Registrable {
     override fun getID(): String {
         return this._id
     }
@@ -38,7 +38,7 @@ class Reward(private val _id: String, val config: Config): Registrable {
         val preEvent = PlayerPreRewardEvent(player, this)
         Bukkit.getPluginManager().callEvent(preEvent)
         if (preEvent.isCancelled) return false
-        
+
         rewardEffects?.trigger(
             player.toDispatcher(),
             TriggerData(

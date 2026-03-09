@@ -2,8 +2,8 @@ package com.exanthiax.xbattlepass.quests
 
 import com.exanthiax.xbattlepass.api.setCompletedQuest
 import com.exanthiax.xbattlepass.categories.Category
-import com.exanthiax.xbattlepass.msToString
 import com.exanthiax.xbattlepass.plugin
+import com.exanthiax.xbattlepass.utils.msToString
 import com.willfp.eco.core.config.interfaces.Config
 import com.willfp.eco.core.data.keys.PersistentDataKey
 import com.willfp.eco.core.data.keys.PersistentDataKeyType
@@ -59,9 +59,11 @@ class ActiveBattleQuest(val config: Config, val category: Category) {
                 val key = this.category.getDisplayableStatusKey()
                 val formattedTime = msToString(this.category.getDisplayableMs())
                 result.add(
-                    line.replace("%quest_timer%", plugin.configYml
-                        .getString("quests-icon.timer-format.$key")
-                        .replace("%time%", formattedTime)),
+                    line.replace(
+                        "%quest_timer%", plugin.configYml
+                            .getString("quests-icon.timer-format.$key")
+                            .replace("%time%", formattedTime)
+                    ),
                 )
             } else {
                 result.add(line.formatEco(player, true))

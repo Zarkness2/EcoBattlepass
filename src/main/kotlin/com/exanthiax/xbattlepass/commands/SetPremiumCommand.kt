@@ -21,6 +21,7 @@ object SetPremiumCommand : PluginCommand(
     "xbattlepass.command.setpremium",
     false
 ) {
+    @Suppress("DEPRECATION")
     override fun onExecute(sender: CommandSender, args: List<String>) {
         if (args.isEmpty()) {
             Messages.sendSetPremiumUsage(sender)
@@ -104,21 +105,25 @@ object SetPremiumCommand : PluginCommand(
                 Bukkit.getOnlinePlayers().map { it.name },
                 ArrayList()
             )
+
             2 -> StringUtil.copyPartialMatches(
                 args[1],
                 BattlePasses.values().map { it.id },
                 ArrayList()
             )
+
             3 -> StringUtil.copyPartialMatches(
                 args[2],
                 listOf("true", "false"),
                 ArrayList()
             )
+
             4 -> StringUtil.copyPartialMatches(
                 args[3],
                 listOf("silent"),
                 ArrayList()
             )
+
             else -> emptyList()
         }
     }
