@@ -5,9 +5,10 @@ import org.bukkit.entity.Player
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 
-private val expMultiplierCache = Caffeine.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build<Player, Double> {
-    it.cacheBPExperienceMultiplier()
-}
+private val expMultiplierCache = Caffeine.newBuilder()
+    .expireAfterWrite(10, TimeUnit.SECONDS).build<Player, Double> {
+        it.cacheBPExperienceMultiplier()
+    }
 
 val Player.bpExperienceMultiplier: Double
     get() = expMultiplierCache.get(this)

@@ -26,7 +26,10 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
 private val levelItemCache = Caffeine.newBuilder()
-    .expireAfterWrite(com.exanthiax.xbattlepass.plugin.configYml.getInt("gui-cache-ttl").toLong(), TimeUnit.MILLISECONDS)
+    .expireAfterWrite(
+        com.exanthiax.xbattlepass.plugin.configYml.getInt("gui-cache-ttl").toLong(),
+        TimeUnit.MILLISECONDS
+    )
     .build<Int, ItemStack>()
 
 class BattleTierComponent(
@@ -121,38 +124,45 @@ class BattleTierComponent(
             }
         }
 
-        return if (key == "unlocked" || key == "unlocked-free" || key == "premium-required") {
-            {
-                val tier = pass.getTier(level)
-                if (tier != null) {
-                    if (key == "premium-required") {
-                        val name = tier.rewards.first { it.tier.name.equals("premium", true) }
-                            .reward.getDisplayName(player)
-                            .formatEco(player, true)
+        return when (key) {
+            "unlocked", "unlocked-free", "premium-required" -> {
+                {
+                    val tier = pass.getTier(level)
+                    if (tier != null) {
+                        if (key == "premium-required") {
+                            val name = tier.rewards.first { it.tier.name.equals("premium", true) }
+                                .reward.getDisplayName(player)
+                                .formatEco(player, true)
 
-                        player.sendMessage(
-                            plugin.langYml.getMessage("premium-required")
-                                .replace("%tier%", level.toString())
-                                .replace("%reward%", name)
-                                .replace("%pass%", pass.name)
-                        )
-                        PlayableSound.create(plugin.configYml.getSubsection("sound.premium-required"))?.playTo(player)
-                    } else {
-                        levelItemCache.invalidate(level)
-                        itemCache[levelState]?.remove(level)
+                            player.sendMessage(
+                                plugin.langYml.getMessage("premium-required")
+                                    .replace("%tier%", level.toString())
+                                    .replace("%reward%", name)
+                                    .replace("%pass%", pass.name)
+                            )
+                            PlayableSound.create(plugin.configYml.getSubsection("sound.premium-required"))
+                                ?.playTo(player)
+                        } else {
+                            levelItemCache.invalidate(level)
+                            itemCache[levelState].remove(level)
 
-                        if (key == "unlocked") player.receiveTier(tier) else player.receiveTierPremiumOnly(tier)
+                            if (key == "unlocked") player.receiveTier(tier) else player.receiveTierPremiumOnly(tier)
 
-                        player.openMenu?.refresh(player)
+                            player.openMenu?.refresh(player)
+                        }
                     }
                 }
             }
-        } else if (key == "locked" || key == "in-progress") {
-            {
-                PlayableSound.create(plugin.configYml.getSubsection("sound.reward-locked"))?.playTo(player)
+
+            "locked", "in-progress" -> {
+                {
+                    PlayableSound.create(plugin.configYml.getSubsection("sound.reward-locked"))?.playTo(player)
+                }
             }
-        } else {
-            {}
+
+            else -> {
+                {}
+            }
         }
     }
 }

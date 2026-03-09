@@ -1,20 +1,18 @@
 package com.exanthiax.xbattlepass.utils
 
-import com.exanthiax.xbattlepass.XBattlePass
 import com.exanthiax.xbattlepass.api.events.PlayerBPExpGainEvent
 import com.exanthiax.xbattlepass.api.events.PlayerPostRewardEvent
 import com.exanthiax.xbattlepass.api.events.PlayerQuestCompleteEvent
 import com.exanthiax.xbattlepass.api.events.PlayerTierLevelUpEvent
 import com.exanthiax.xbattlepass.api.getTier
 import com.exanthiax.xbattlepass.api.giveBPExperience
+import com.exanthiax.xbattlepass.plugin
 import com.willfp.eco.core.sound.PlayableSound
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 
-class BattlePassListener(
-    private val plugin: XBattlePass
-): Listener {
+object BattlePassListener : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     fun handleBPLevelUp(event: PlayerTierLevelUpEvent) {
         val player = event.player

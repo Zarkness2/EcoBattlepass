@@ -33,7 +33,6 @@ import java.util.regex.Pattern
 
 class BattlePass(private val _id: String, val config: Config): Registrable {
     init {
-
         PlayerlessPlaceholder(plugin, "${_id}_max_tiers") {
             this.maxLevel.toString()
         }.register()

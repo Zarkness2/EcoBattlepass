@@ -86,11 +86,19 @@ class ActiveBattleTask(val config: Config, val quest: ActiveBattleQuest) {
                 line.contains("%task%", ignoreCase = true) -> {
                     result.add(InternalPlaceholders.TaskPlaceholders.replace(line, this, player))
                 }
+
                 line.contains("%task_lore%", ignoreCase = true) -> {
                     for (loreLine in this.parent.lore) {
-                        result.add(InternalPlaceholders.TaskPlaceholders.replace(line.replace("%task_lore%", loreLine), this, player))
+                        result.add(
+                            InternalPlaceholders.TaskPlaceholders.replace(
+                                line.replace("%task_lore%", loreLine),
+                                this,
+                                player
+                            )
+                        )
                     }
                 }
+
                 else -> {
                     result.add(line)
                 }

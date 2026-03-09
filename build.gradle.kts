@@ -1,10 +1,12 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    java
-    `java-library`
-    `maven-publish`
-    kotlin("jvm") version "2.1.10"
-    id("com.gradleup.shadow") version "8.3.5"
-    id("com.willfp.libreforge-gradle-plugin") version "1.0.2"
+    kotlin("jvm") version "2.3.0"
+    id("java")
+    id("java-library")
+    id("maven-publish")
+    id("com.gradleup.shadow") version "9.3.1"
+    id("com.willfp.libreforge-gradle-plugin") version "2.0.0"
 }
 
 group = "com.exanthiax"
@@ -24,37 +26,47 @@ allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
+        maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://repo.auxilor.io/repository/maven-public/")
         maven("https://jitpack.io")
-        maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
-
-        maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
-        maven {
-            url = uri("https://repo.papermc.io/repository/maven-public/")
-        }
-        maven {
-            url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
-        }
+        maven("https://repo.codemc.io/repository/maven-releases/")
+        maven("https://repo.codemc.io/repository/maven-snapshots/")
+        maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     }
 
     dependencies {
         compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
-        compileOnly (fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
-        compileOnly ("com.willfp:eco:6.77.6")
-        compileOnly("com.github.ben-manes.caffeine:caffeine:3.0.5")
+
+        compileOnly("com.willfp:eco:7.0.0")
+        compileOnly("org.jetbrains.kotlin:kotlin-stdlib:2.3.0")
+        compileOnly("com.github.ben-manes.caffeine:caffeine:3.2.3")
+
         implementation("com.willfp:ecomponent:1.4.1")
+
+        compileOnly (fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
     }
 
     java {
         withSourcesJar()
+        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
     }
 
     tasks {
         shadowJar {
-            exclude("kotlin/**")
-            exclude("kotlinx/**")
             relocate("com.willfp.ecomponent", "com.exanthiax.xbattlepass.ecomponent")
+            relocate("com.willfp.libreforge.loader", "com.exanthiax.xbattlepass.libreforge.loader")
+            relocate("kotlin", "com.willfp.eco.libs.kotlin")
+            relocate("kotlin.jvm", "com.willfp.eco.libs.kotlin.jvm")
+            relocate("kotlin.coroutines", "com.willfp.eco.libs.kotlin.coroutines")
+            relocate("kotlin.reflect", "com.willfp.eco.libs.kotlin.reflect")
         }
+
+        compileKotlin {
+            compilerOptions {
+                jvmTarget.set(JvmTarget.JVM_21)
+            }
+        }
+
         compileJava {
             options.isDeprecation = true
             options.encoding = "UTF-8"
@@ -66,7 +78,7 @@ allprojects {
             filesMatching(listOf("**plugin.yml", "**eco.yml")) {
                 expand(
                     "version" to project.version,
-                    "libreforgeVersion" to libreforgeVersion,
+                    "libreforgeVersion" to libreforgeVersion!!,
                     "pluginName" to rootProject.name
                 )
             }

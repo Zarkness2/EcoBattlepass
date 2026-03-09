@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.exanthiax.xbattlepass.gui
 
 import com.exanthiax.xbattlepass.categories.Category
@@ -14,29 +16,32 @@ import com.willfp.eco.core.items.builder.ItemStackBuilder
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
-class QuestsGUI(private val player: Player, val category: Category, val page: Int = 1,
-                val wasBack: Boolean = false) {
+class QuestsGUI(
+    private val player: Player, val category: Category, val page: Int = 1,
+    val wasBack: Boolean = false
+) {
     fun open() {
         val pattern = plugin.configYml.getStrings("quests-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
-            .setTitle(plugin.configYml.getFormattedString("quests-gui.title")
-                .replace("%page%", page.toString())
-                .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
-                .replace("%pass%", category.battlepass.name)
+            .setTitle(
+                plugin.configYml.getFormattedString("quests-gui.title")
+                    .replace("%page%", page.toString())
+                    .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
+                    .replace("%pass%", category.battlepass.name)
             )
         var row = 1
-        var num = ((page-1)*getPerPage())
+        var num = ((page - 1) * getPerPage())
         pattern.forEach {
             var col = 1
-            it.toCharArray().forEach {
-                    s -> kotlin.run {
-                if (s.equals('q', true)) {
-                    if (num < category.quests.size) {
-                        menu.setSlot(row, col, slot(category.quests[num]))
+            it.toCharArray().forEach { s ->
+                kotlin.run {
+                    if (s.equals('q', true)) {
+                        if (num < category.quests.size) {
+                            menu.setSlot(row, col, slot(category.quests[num]))
+                        }
+                        num++
                     }
-                    num++
                 }
-            }
                 col++
             }
             row++

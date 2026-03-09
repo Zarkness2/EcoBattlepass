@@ -2,6 +2,7 @@ package com.exanthiax.xbattlepass
 
 import com.exanthiax.xbattlepass.battlepass.BattlePasses
 import com.exanthiax.xbattlepass.categories.Categories
+import com.exanthiax.xbattlepass.commands.XBattlePassCommand
 import com.exanthiax.xbattlepass.libreforge.conditions.ConditionHasBPPremium
 import com.exanthiax.xbattlepass.libreforge.conditions.ConditionHasBPTier
 import com.exanthiax.xbattlepass.libreforge.effects.EffectBPExpMultiplier
@@ -23,7 +24,6 @@ import com.exanthiax.xbattlepass.utils.BattlePassListener
 import com.willfp.eco.core.command.impl.PluginCommand
 import com.willfp.eco.core.config.BaseConfig
 import com.willfp.eco.core.config.ConfigType
-import com.willfp.eco.util.toNiceString
 import com.willfp.libreforge.conditions.Conditions
 import com.willfp.libreforge.effects.Effects
 import com.willfp.libreforge.filters.Filters
@@ -35,11 +35,11 @@ import org.bukkit.event.Listener
 lateinit var plugin: XBattlePass
     private set
 
-class XBattlePass: LibreforgePlugin() {
+class XBattlePass : LibreforgePlugin() {
     init {
         plugin = this
         this.configHandler.addConfig(
-            object: BaseConfig(
+            object : BaseConfig(
                 "categories",
                 this,
                 false,
@@ -50,13 +50,13 @@ class XBattlePass: LibreforgePlugin() {
 
     override fun loadListeners(): List<Listener> {
         return listOf(
-            BattlePassListener(this)
+            BattlePassListener
         )
     }
 
     override fun loadPluginCommands(): MutableList<PluginCommand> {
         return mutableListOf(
-            com.exanthiax.xbattlepass.commands.XBattlePassCommand
+            XBattlePassCommand
         )
     }
 
@@ -104,42 +104,4 @@ class XBattlePass: LibreforgePlugin() {
             BattlePasses.tickUpdates()
         }
     }
-}
-
-fun msToString(ms: Long): String {
-    // Define constants
-    val secondsPerMs = 0.001
-    val secondsInMinute = 60
-    val secondsInHour = 3600
-    val secondsInDay = 86400
-
-    // Convert ticks to total seconds
-    val totalSeconds = ms * secondsPerMs
-
-    // Calculate days, hours, minutes, and seconds
-    val days = (totalSeconds / secondsInDay).toInt()
-    val hours = ((totalSeconds % secondsInDay) / secondsInHour).toInt()
-    val minutes = ((totalSeconds % secondsInHour) / secondsInMinute).toInt()
-    val seconds = (totalSeconds % secondsInMinute).toInt()
-
-    val lst = mutableListOf<String>()
-
-    if (days > 0) {
-        lst += plugin.configYml.getFormattedString("time-format.days")
-            .replace("%value%", days.toNiceString())
-    }
-    if (hours > 0) {
-        lst += plugin.configYml.getFormattedString("time-format.hours")
-            .replace("%value%", hours.toNiceString())
-    }
-    if (minutes > 0) {
-        lst += plugin.configYml.getFormattedString("time-format.minutes")
-            .replace("%value%", minutes.toNiceString())
-    }
-
-    lst += plugin.configYml.getFormattedString("time-format.seconds")
-        .replace("%value%", seconds.toNiceString())
-
-    // Format the result as a string
-    return lst.joinToString(plugin.configYml.getFormattedString("time-format.split"))
 }
