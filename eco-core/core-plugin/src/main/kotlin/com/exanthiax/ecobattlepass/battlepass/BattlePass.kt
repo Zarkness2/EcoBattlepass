@@ -47,77 +47,21 @@ class BattlePass(private val _id: String, val config: Config): Registrable {
             categories.sumOf { it.quests.size }.toString()  
         }.register()
 
-        PlayerlessPlaceholder(plugin, "week_${_id}") {  
-            val now = LocalDateTime.now()  
-            if (now.isBefore(startDate)) {   
-                plugin.langYml.getFormattedString("season-not-started")  
-            } else if (now.isAfter(endDate)) {  
-                plugin.langYml.getFormattedString("season-finished")  
-            } else {  
-                val weekCategories = categories.filter { it.config.getInt("priority") > 0 }  
-        
-                val activeWeek = weekCategories.filter { it.isActive }  
-                    .maxByOrNull { it.config.getInt("priority") }  
-        
-                if (activeWeek != null) {  
-                    activeWeek.config.getInt("priority").toString()  
-                } else {   
-                    val allWeeksEnded = weekCategories.all { cat ->  
-                        cat.endDate != null && now.isAfter(cat.endDate)  
-                    }  
-                    if (allWeeksEnded) {  
-                        plugin.langYml.getFormattedString("season-finished")  
-                    } else {  
-                        val lastEndedWeek = weekCategories  
-                            .filter { cat -> cat.endDate != null && now.isAfter(cat.endDate) }  
-                            .maxByOrNull { it.config.getInt("priority") }  
-                        lastEndedWeek?.config?.getInt("priority")?.toString() ?: plugin.langYml.getFormattedString("waiting-for-week")  
-                    }  
-                }  
-            }  
+        PlayerlessPlaceholder(plugin, "week_${_id}") {
+            getWeekPlaceholder()
         }.register()
 
-        PlayerlessPlaceholder(plugin, "time_to_next_week_${_id}") {  
-            val now = LocalDateTime.now()  
-            if (now.isBefore(startDate)) {  
-                plugin.langYml.getFormattedString("season-not-started")
-            } else if (now.isAfter(endDate)) {  
-                plugin.langYml.getFormattedString("season-finished")
-            } else {  
-                val weekCategories = categories.filter { it.config.getInt("priority") > 0 }  
-                val nextWeek = weekCategories  
-                    .filter { it.startDate.isAfter(now) }  
-                    .minByOrNull { it.startDate }  
-        
-                if (nextWeek == null) {  
-                    plugin.langYml.getFormattedString("season-finished") 
-                } else {  
-                    val millisLeft = nextWeek.startDate  
-                        .atZone(java.time.ZoneId.systemDefault())  
-                        .toInstant()  
-                        .toEpochMilli() - System.currentTimeMillis()  
-                    msToString(millisLeft.coerceAtLeast(0)) 
-                }  
-            }  
+        PlayerlessPlaceholder(plugin, "time_to_next_week_${_id}") {
+            getTimeToNextWeekPlaceholder()
         }.register()
 
-        PlayerlessPlaceholder(plugin, "time_to_season_end_${_id}") {  
-            val now = LocalDateTime.now()  
-            if (now.isBefore(startDate)) {  
-                plugin.langYml.getFormattedString("season-not-started")  
-            } else if (now.isAfter(endDate)) {  
-                plugin.langYml.getFormattedString("season-finished")  
-            } else {  
-                val millisLeft = endDate.atZone(java.time.ZoneId.systemDefault())  
-                    .toInstant()  
-                    .toEpochMilli() - System.currentTimeMillis()  
-                msToString(millisLeft.coerceAtLeast(0))  
-            }  
+        PlayerlessPlaceholder(plugin, "time_to_season_end_${_id}") {
+            getTimeToSeasonEndPlaceholder()
         }.register()
 
         PlayerPlaceholder(plugin, "has_unclaimed_rewards_${_id}") { player ->  
             plugin.langYml.getString(
-            if (getClaimable(player) > 0) "boolean.true" else "boolean.false"  
+            if (getClaimable(player) > 0) "yes" else "no"
             )
         }.register()
 
@@ -137,7 +81,7 @@ class BattlePass(private val _id: String, val config: Config): Registrable {
 
         PlayerPlaceholder(plugin, "${_id}_pass_type") { player ->
             plugin.langYml.getString(
-                if (player.hasPermission(premiumPerm)) "pass-type.premium" else "pass-type.free"
+                if (player.hasPermission(premiumPerm)) "premium" else "free"
             )
         }.register()
 
@@ -312,4 +256,78 @@ class BattlePass(private val _id: String, val config: Config): Registrable {
     private fun <T : Any> writeToProfile(profile: Profile, key: PersistentDataKey<T>) {
         profile.write(key, key.defaultValue)
     }
+
+    private fun getWeekPlaceholder(): String {
+        val now = LocalDateTime.now()
+        if (now.isBefore(startDate)) {
+            return plugin.langYml.getFormattedString("season-not-started")
+        }
+        if (now.isAfter(endDate)) {
+            return plugin.langYml.getFormattedString("season-finished")
+        }
+
+        val weekCategories = categories.filter { it.config.getInt("priority") > 0 }
+        val activeWeek = weekCategories.filter { it.isActive }
+            .maxByOrNull { it.config.getInt("priority") }
+
+        if (activeWeek != null) {
+            return activeWeek.config.getInt("priority").toString()
+        }
+
+        val allWeeksEnded = weekCategories.all { cat ->
+            cat.endDate != null && now.isAfter(cat.endDate)
+        }
+
+        return if (allWeeksEnded) {
+            plugin.langYml.getFormattedString("season-finished")
+        } else {
+            val lastEndedWeek = weekCategories
+                .filter { cat -> cat.endDate != null && now.isAfter(cat.endDate) }
+                .maxByOrNull { it.config.getInt("priority") }
+
+            lastEndedWeek?.config?.getInt("priority")?.toString()
+                ?: plugin.langYml.getFormattedString("waiting-for-week")
+        }
+    }
+
+    private fun getTimeToNextWeekPlaceholder(): String {
+        val now = LocalDateTime.now()
+        if (now.isBefore(startDate)) {
+            return plugin.langYml.getFormattedString("season-not-started")
+        }
+        if (now.isAfter(endDate)) {
+            return plugin.langYml.getFormattedString("season-finished")
+        }
+
+        val weekCategories = categories.filter { it.config.getInt("priority") > 0 }
+        val nextWeek = weekCategories
+            .filter { it.startDate.isAfter(now) }
+            .minByOrNull { it.startDate }
+
+        return if (nextWeek == null) {
+            plugin.langYml.getFormattedString("season-finished")
+        } else {
+            val millisLeft = nextWeek.startDate
+                .atZone(java.time.ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli() - System.currentTimeMillis()
+            msToString(millisLeft.coerceAtLeast(0))
+        }
+    }
+
+    private fun getTimeToSeasonEndPlaceholder(): String {
+        val now = LocalDateTime.now()
+        if (now.isBefore(startDate)) {
+            return plugin.langYml.getFormattedString("season-not-started")
+        }
+        if (now.isAfter(endDate)) {
+            return plugin.langYml.getFormattedString("season-finished")
+        }
+
+        val millisLeft = endDate.atZone(java.time.ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli() - System.currentTimeMillis()
+        return msToString(millisLeft.coerceAtLeast(0))
+    }
+
 }
