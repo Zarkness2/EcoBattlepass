@@ -4,9 +4,12 @@ import com.exanthiax.ecobattlepass.api.getTier
 import com.exanthiax.ecobattlepass.api.hasPremium
 import com.exanthiax.ecobattlepass.api.hasReceivedTier
 import com.exanthiax.ecobattlepass.api.receiveTier
+import com.exanthiax.ecobattlepass.api.receiveTierFreeOnly
 import com.exanthiax.ecobattlepass.api.receiveTierPremiumOnly
 import com.exanthiax.ecobattlepass.battlepass.BattlePass
 import com.exanthiax.ecobattlepass.tiers.BPTier
+import com.exanthiax.ecobattlepass.tiers.TierType
+import com.exanthiax.ecobattlepass.utils.InternalPlaceholders
 import com.exanthiax.ecobattlepass.utils.ReceivedTierState
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.willfp.eco.core.EcoPlugin
@@ -17,7 +20,6 @@ import com.willfp.eco.core.map.nestedMap
 import com.willfp.eco.core.placeholder.context.placeholderContext
 import com.willfp.eco.core.sound.PlayableSound
 import com.willfp.eco.util.NumberUtils.evaluateExpression
-import com.willfp.eco.util.formatEco
 import com.willfp.eco.util.openMenu
 import com.willfp.ecomponent.components.LevelState
 import org.bukkit.entity.Player
@@ -26,57 +28,103 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 
+// Cache mejorada del Código 1 (Usa Triple para diferenciar por TierType)
 private val levelItemCache = Caffeine.newBuilder()
     .expireAfterWrite(
         com.exanthiax.ecobattlepass.plugin.configYml.getInt("gui-cache-ttl").toLong(),
         TimeUnit.MILLISECONDS
     )
-    .build<Pair<UUID, Int>, ItemStack>()
+    .build<Triple<UUID, Int, TierType?>, ItemStack>()
+
+fun invalidateTierItemCache() {
+    levelItemCache.invalidateAll()
+}
 
 class BattleTierComponent(
     private val plugin: EcoPlugin,
-    private val pass: BattlePass
+    private val pass: BattlePass,
+    private val tierType: TierType? = null,
+    patternPath: String = "tiers-gui.mask.progression-pattern"
 ) : ProperLevelComponent() {
-    override val pattern: List<String> = plugin.configYml.getStrings("tiers-gui.mask.progression-pattern")
+    override val pattern: List<String> = plugin.configYml.getStrings(patternPath)
     override val maxLevel = pass.maxLevel
 
     private val itemCache = nestedMap<LevelState, Int, ItemStack>()
 
-    override fun getLevelItem(player: Player, menu: Menu, level: Int, levelState: LevelState): ItemStack {
-        val key: String = run {
-            if (levelState == LevelState.UNLOCKED) {
-                when (player.hasReceivedTier(pass, level)) {
-                    ReceivedTierState.RECEIVED -> "claimed"
-                    ReceivedTierState.RECEIVED_FREE -> if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
-                    else -> levelState.key
-                }
-            } else {
-                levelState.key
-            }
+    private val showEmptyAsClaimed: Boolean =
+        plugin.configYml.getBoolOrNull("tiers-gui.show-empty-tiers-as-claimed") ?: true
+
+    // Lógica del Código 1 para filtrar recompensas por fila
+    private fun hasRelevantRewards(tier: BPTier): Boolean {
+        return when (tierType) {
+            TierType.FREE -> tier.rewards.any { it.tier == TierType.FREE }
+            TierType.PREMIUM -> tier.rewards.any { it.tier == TierType.PREMIUM }
+            null -> tier.rewards.isNotEmpty()
+        }
+    }
+
+    // El corazón de la lógica: resuelve la "key" de configuración (claimed, unlocked, etc.)
+    private fun resolveKey(player: Player, level: Int, levelState: LevelState): String {
+        val tier = pass.getTier(level)
+
+        if (tier == null || !hasRelevantRewards(tier)) {
+            return if (showEmptyAsClaimed) "claimed" else "hidden"
         }
 
-        // plugin.logger.info("Level $level, $key item ${Items.lookup(plugin.configYml.getString("tiers-gui.buttons.$key.item"))}")
+        if (levelState != LevelState.UNLOCKED) {
+            return levelState.key
+        }
 
-        fun item() = levelItemCache.get(Pair(player.uniqueId, level)) {
+        val receivedState = player.hasReceivedTier(pass, level)
+
+        return when (tierType) {
+            TierType.FREE -> when (receivedState) {
+                ReceivedTierState.RECEIVED, ReceivedTierState.RECEIVED_FREE -> "claimed"
+                else -> "unlocked"
+            }
+
+            TierType.PREMIUM -> when (receivedState) {
+                ReceivedTierState.RECEIVED, ReceivedTierState.RECEIVED_PREMIUM -> "claimed"
+                else -> if (player.hasPremium(pass)) "unlocked" else "premium-required"
+            }
+
+            null -> when (receivedState) {
+                ReceivedTierState.RECEIVED -> "claimed"
+                ReceivedTierState.RECEIVED_FREE -> if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
+                ReceivedTierState.RECEIVED_PREMIUM -> "unlocked"
+                else -> levelState.key
+            }
+        }
+    }
+
+    override fun getLevelItem(player: Player, menu: Menu, level: Int, levelState: LevelState): ItemStack {
+        val key = resolveKey(player, level, levelState)
+
+        if (key == "hidden") return ItemStack.empty()
+
+        fun item() = levelItemCache.get(Triple(player.uniqueId, level, tierType)) {
             val tier = pass.getTier(level)!!
 
-            ItemStackBuilder(Items.lookup(plugin.configYml.getString("tiers-gui.buttons.$key.item")))
-                .setDisplayName(
-                    tier.format(plugin.configYml.getString("tiers-gui.buttons.$key.name"), player).firstOrNull() ?: ""
-                )
-                .addLoreLines(
-                    tier.format(
-                        plugin.configYml.getStrings("tiers-gui.buttons.$key.lore"),
-                        player,
-                    )/*.lineWrap(plugin.configYml.getInt("gui.skill-icon.line-wrap"))*/
-                )
+            // Prioriza configuración por tier, luego global (Mejora del Código 1)
+            val displayItem = tier.config.getStringOrNull("display.$key.item")
+                ?: plugin.configYml.getString("tiers-gui.buttons.$key.item")
+            val displayName = tier.config.getStringOrNull("display.$key.name")
+                ?: plugin.configYml.getString("tiers-gui.buttons.$key.name")
+            val displayLore = if (tier.config.has("display.$key.lore"))
+                tier.config.getStrings("display.$key.lore")
+            else
+                plugin.configYml.getStrings("tiers-gui.buttons.$key.lore")
+
+            val resolvedItem = InternalPlaceholders.TierPlaceholders.replace(displayItem, tier, pass, player)
+
+            ItemStackBuilder(Items.lookup(resolvedItem))
+                .setDisplayName(tier.format(displayName, player).firstOrNull() ?: "")
+                .addLoreLines(tier.format(displayLore, player))
                 .setAmount(
                     evaluateExpression(
                         plugin.configYml.getString("tiers-gui.buttons.item-amount")
                             .replace("%level%", level.toString()),
-                        placeholderContext(
-                            player = player
-                        )
+                        placeholderContext(player = player)
                     ).roundToInt()
                 )
                 .build()
@@ -86,8 +134,6 @@ class BattleTierComponent(
             itemCache[levelState].getOrPut(level) { item() }
         } else {
             item()
-        }.apply {
-            // "Slot $level item $this"
         }
     }
 
@@ -101,11 +147,12 @@ class BattleTierComponent(
 
     private fun Player.sendPremiumRequiredMessage(tierLevel: Int, tier: BPTier) {
         val premiumRewardName = tier.rewards
-            .first { it.tier.name.equals("premium", true) }
-            .reward.getDisplayName(this)
+            .firstOrNull { it.tier.name.equals("premium", true) }
+            ?.reward?.getDisplayName(this) ?: return
 
         sendMessage(
-            plugin.langYml.getMessage("premium-required")
+            InternalPlaceholders.TierPlaceholders
+                .replace(plugin.langYml.getMessage("premium-required"), tier, pass, this)
                 .replace("%tier%", tierLevel.toString())
                 .replace("%reward%", premiumRewardName)
         )
@@ -113,17 +160,7 @@ class BattleTierComponent(
     }
 
     override fun getLeftClickAction(player: Player, level: Int, levelState: LevelState): () -> Unit {
-        val key: String = run {
-            if (levelState == LevelState.UNLOCKED) {
-                when (player.hasReceivedTier(pass, level)) {
-                    ReceivedTierState.RECEIVED -> "claimed"
-                    ReceivedTierState.RECEIVED_FREE -> if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
-                    else -> levelState.key
-                }
-            } else {
-                levelState.key
-            }
-        }
+        val key = resolveKey(player, level, levelState)
 
         return when (key) {
             "unlocked", "unlocked-free", "premium-required" -> {
@@ -131,24 +168,22 @@ class BattleTierComponent(
                     val tier = pass.getTier(level)
                     if (tier != null) {
                         if (key == "premium-required") {
-                            val name = tier.rewards.first { it.tier.name.equals("premium", true) }
-                                .reward.getDisplayName(player)
-                                .formatEco(player, true)
-
-                            player.sendMessage(
-                                plugin.langYml.getMessage("premium-required")
-                                    .replace("%tier%", level.toString())
-                                    .replace("%reward%", name)
-                                    .replace("%pass%", pass.name)
-                            )
-                            PlayableSound.create(plugin.configYml.getSubsection("sound.premium-required"))
-                                ?.playTo(player)
+                            player.sendPremiumRequiredMessage(level, tier)
                         } else {
-                            levelItemCache.invalidate(Pair(player.uniqueId, level))
+                            // Limpieza de caché para evitar bugs visuales
+                            levelItemCache.invalidate(Triple(player.uniqueId, level, null))
+                            levelItemCache.invalidate(Triple(player.uniqueId, level, TierType.FREE))
+                            levelItemCache.invalidate(Triple(player.uniqueId, level, TierType.PREMIUM))
                             itemCache[levelState].remove(level)
 
-                            if (key == "unlocked") player.receiveTier(tier) else player.receiveTierPremiumOnly(tier)
-
+                            when (tierType) {
+                                TierType.FREE -> player.receiveTierFreeOnly(tier)
+                                TierType.PREMIUM -> player.receiveTierPremiumOnly(tier)
+                                null -> {
+                                    if (key == "unlocked") player.receiveTier(tier)
+                                    else player.receiveTierPremiumOnly(tier)
+                                }
+                            }
                             player.openMenu?.refresh(player)
                         }
                     }
@@ -156,9 +191,7 @@ class BattleTierComponent(
             }
 
             "locked", "in-progress" -> {
-                {
-                    PlayableSound.create(plugin.configYml.getSubsection("sound.reward-locked"))?.playTo(player)
-                }
+                { PlayableSound.create(plugin.configYml.getSubsection("sound.reward-locked"))?.playTo(player) }
             }
 
             else -> {

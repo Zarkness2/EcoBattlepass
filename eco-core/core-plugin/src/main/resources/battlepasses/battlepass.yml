@@ -3,10 +3,10 @@ name: "&6Season 1 Battlepass"
 battlepass:
   xp-formula: 1250 # The formula to calculate the XP needed to reach the next tier
   max-tier: 100 # The maximum tier of the battle pass
-  command: 'battlepass' # The command to open the battle pass GUI
+  command: "battlepass" # The command to open the battle pass GUI
   premium-permission: "ecobattlepass.pass.premium" # The permission required to access the premium path
   battlepass-start: 2025-01-01 00:00 # The date the battle pass starts, used for scheduling start. This must match the date format in config.yml, otherise you will get errors.
-  battlepass-end: 2026-01-01 00:00 # The date the battle pass starts, used for scheduling start. This must match the date format in config.yml, otherise you will get errors.
+  battlepass-end: 2027-01-01 00:00 # The date the battle pass starts, used for scheduling start. This must match the date format in config.yml, otherise you will get errors.
 
 # Below are the tier rewards for the battlepass.
 # The tier is the level the player needs to reach to unlock the rewards.
@@ -62,6 +62,18 @@ tiers:
     rewards:
       - id: crafting_table_command
         tier: premium
+    display:
+      locked:
+        item: barrier
+        name: "&4&lLEGENDARY TIER"
+        lore:
+          - "&cReach tier 50 to unlock!"
+      unlocked:
+        item: dragon_egg
+        name: "&5&lLEGENDARY TIER 50"
+      claimed:
+        item: end_portal_frame
+        name: "&5&lLEGENDARY TIER 50"
 
   - tier: 12
     rewards:

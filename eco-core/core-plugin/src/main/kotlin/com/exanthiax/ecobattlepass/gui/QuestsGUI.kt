@@ -20,14 +20,24 @@ class QuestsGUI(
     private val player: Player, val category: Category, val page: Int = 1,
     val wasBack: Boolean = false
 ) {
+
+    // Helper para resolver placeholders internos + PAPI
+    private fun r(s: String) =
+        InternalPlaceholders.CategoryPlaceholders.replace(s, category = category, player = player)
+
+    private fun rAll(list: List<String>) =
+        InternalPlaceholders.CategoryPlaceholders.replaceAll(list, category = category, player = player)
+
     fun open() {
         val pattern = plugin.configYml.getStrings("quests-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
             .setTitle(
-                plugin.configYml.getFormattedString("quests-gui.title")
-                    .replace("%page%", page.toString())
-                    .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
-                    .replace("%pass%", category.battlepass.name)
+                r(
+                    plugin.configYml.getFormattedString("quests-gui.title")
+                        .replace("%page%", page.toString())
+                        .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
+                        .replace("%pass%", category.battlepass.name)
+                )
             )
         var row = 1
         var num = ((page - 1) * getPerPage())
@@ -91,9 +101,9 @@ class QuestsGUI(
                 plugin.configYml.getInt("quests-gui.buttons.close.column"),
                 Slot.builder(
                     ItemStackBuilder(
-                        Items.lookup(plugin.configYml.getString("quests-gui.buttons.close.material"))
-                    ).setDisplayName(plugin.configYml.getString("quests-gui.buttons.close.name"))
-                        .addLoreLines(plugin.configYml.getFormattedStrings("quests-gui.buttons.close.lore"))
+                        Items.lookup(r(plugin.configYml.getString("quests-gui.buttons.close.material")))
+                    ).setDisplayName(r(plugin.configYml.getString("quests-gui.buttons.close.name")))
+                        .addLoreLines(rAll(plugin.configYml.getStrings("quests-gui.buttons.close.lore")))
                         .build()
                 ).onLeftClick { event, _ ->
                     event.whoClicked.closeInventory()
@@ -121,9 +131,9 @@ class QuestsGUI(
         val nextActive = page < getMaxPages()
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("quests-gui.buttons.next-page.item.${getActive(nextActive)}"))
+                Items.lookup(r(plugin.configYml.getString("quests-gui.buttons.next-page.item.${getActive(nextActive)}")))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("quests-gui.buttons.next-page.lore.${getActive(nextActive)}")
+                rAll(plugin.configYml.getFormattedStrings("quests-gui.buttons.next-page.lore.${getActive(nextActive)}"))
             ).build()
         )
 
@@ -139,9 +149,9 @@ class QuestsGUI(
         val prevActive = page > 1 || wasBack
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("quests-gui.buttons.prev-page.item.${getActive(prevActive)}"))
+                Items.lookup(r(plugin.configYml.getString("quests-gui.buttons.prev-page.item.${getActive(prevActive)}")))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("quests-gui.buttons.prev-page.lore.${getActive(prevActive)}")
+                rAll(plugin.configYml.getStrings("quests-gui.buttons.prev-page.lore.${getActive(prevActive)}"))
             ).build()
         )
 
@@ -162,7 +172,8 @@ class QuestsGUI(
 
     private fun slot(pair: ActiveBattleQuest): Slot {
         val itemBuilder = ItemStackBuilder(
-            Items.lookup(pair.parent.itemString.replace("%player%", player.name)).item.clone()
+            // CHANGED: aplicar r() para resolver placeholders internos + PAPI
+            Items.lookup(r(pair.parent.itemString.replace("%player%", player.name))).item.clone()
         ).setDisplayName(
             pair.getFormattedName(player)
         ).addLoreLines(

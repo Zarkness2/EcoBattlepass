@@ -20,6 +20,7 @@ class BPTier(val config: Config, val battlepass: BattlePass) {
     val rewards = config.getSubsections("rewards").map { BPReward(it) }
     val saveId = "bptier_$number"
     val saveIdFree = "bptier_${number}_free"
+    val saveIdPremium = "bptier_${number}_premium"
     val transient = false
 
     fun getRewardsFormatted(tierType: TierType, player: Player): List<String> {
