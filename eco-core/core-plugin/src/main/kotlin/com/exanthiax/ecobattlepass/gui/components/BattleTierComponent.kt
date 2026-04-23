@@ -54,6 +54,9 @@ class BattleTierComponent(
     private val showEmptyAsClaimed: Boolean =
         plugin.configYml.getBoolOrNull("tiers-gui.show-empty-tiers-as-claimed") ?: true
 
+    private val maxItemAmount: Int =
+        (plugin.configYml.getIntOrNull("tiers-gui.buttons.max-item-amount") ?: 64).coerceIn(1, 99)
+
     // Lógica del Código 1 para filtrar recompensas por fila
     private fun hasRelevantRewards(tier: BPTier): Boolean {
         return when (tierType) {
@@ -121,9 +124,8 @@ class BattleTierComponent(
         if (key == "hidden") return ItemStack.empty()
 
         fun item() = levelItemCache.get(Triple(player.uniqueId, level, tierType)) {
-            val tier = pass.getTier(level)!!
+            val tier = pass.getTier(level) ?: BPTier(level, pass)  // fix NPE para tiers null
 
-            // Prioriza configuración por tier, luego global (Mejora del Código 1)
             val displayItem = tier.config.getStringOrNull("display.$key.item")
                 ?: plugin.configYml.getString("tiers-gui.buttons.$key.item")
             val displayName = tier.config.getStringOrNull("display.$key.name")
@@ -135,17 +137,26 @@ class BattleTierComponent(
 
             val resolvedItem = InternalPlaceholders.TierPlaceholders.replace(displayItem, tier, pass, player)
 
-            ItemStackBuilder(Items.lookup(resolvedItem))
+            val amount = evaluateExpression(
+                plugin.configYml.getString("tiers-gui.buttons.item-amount")
+                    .replace("%level%", level.toString()),
+                placeholderContext(player = player)
+            ).roundToInt().coerceIn(1, maxItemAmount)
+
+            val builtItem = ItemStackBuilder(Items.lookup(resolvedItem))
                 .setDisplayName(tier.format(displayName, player).firstOrNull() ?: "")
                 .addLoreLines(tier.format(displayLore, player))
-                .setAmount(
-                    evaluateExpression(
-                        plugin.configYml.getString("tiers-gui.buttons.item-amount")
-                            .replace("%level%", level.toString()),
-                        placeholderContext(player = player)
-                    ).roundToInt()
-                )
+                .setAmount(amount)
                 .build()
+
+            // Permitir cantidades > 64 en 1.20.5+
+            if (maxItemAmount > 64) {
+                val meta = builtItem.itemMeta
+                meta.setMaxStackSize(maxItemAmount)
+                builtItem.itemMeta = meta
+            }
+
+            builtItem
         }
 
         return if (levelState != LevelState.IN_PROGRESS) {
