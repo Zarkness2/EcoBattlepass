@@ -83,6 +83,10 @@ tiers-gui:
   # Works in both combined and split modes
   show-empty-tiers-as-claimed: true
 
+  # If true, opens the tiers menu at the page of the player's current tier.
+  # If false, always opens at page 1.
+  open-at-current-tier: true
+
   mask:
     # The way the mask works is by having a list of materials
     # And then a pattern to use those materials.

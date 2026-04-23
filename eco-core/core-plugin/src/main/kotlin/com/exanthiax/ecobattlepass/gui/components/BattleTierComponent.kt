@@ -67,6 +67,24 @@ class BattleTierComponent(
     private fun resolveKey(player: Player, level: Int, levelState: LevelState): String {
         val tier = pass.getTier(level)
 
+        if (tier == null) {
+            return if (showEmptyAsClaimed) "claimed" else "hidden"
+        }
+
+        // Verificar recompensas vacías DESPUÉS de considerar el levelState
+        if (!hasRelevantRewards(tier)) {
+            return when {
+                !showEmptyAsClaimed -> "hidden"
+                levelState == LevelState.UNLOCKED -> "claimed"
+                else -> levelState.key  // locked, in-progress, etc.
+            }
+        }
+
+        if (levelState != LevelState.UNLOCKED) {
+            return levelState.key
+        }
+
+        /*
         if (tier == null || !hasRelevantRewards(tier)) {
             return if (showEmptyAsClaimed) "claimed" else "hidden"
         }
@@ -74,7 +92,7 @@ class BattleTierComponent(
         if (levelState != LevelState.UNLOCKED) {
             return levelState.key
         }
-
+        */
         val receivedState = player.hasReceivedTier(pass, level)
 
         return when (tierType) {

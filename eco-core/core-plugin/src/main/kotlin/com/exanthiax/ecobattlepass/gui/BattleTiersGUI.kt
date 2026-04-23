@@ -26,6 +26,7 @@ object BattleTiersGUI {
         val maskItems = MaskItems.fromItemNames(plugin.configYml.getStrings("tiers-gui.mask.materials"))
 
         val layout = plugin.configYml.getStringOrNull("tiers-gui.layout") ?: "combined"
+        val openAtCurrentTier = plugin.configYml.getBoolOrNull("tiers-gui.open-at-current-tier") ?: true
 
         // Helper para resolver placeholders internos + PAPI
         fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
@@ -36,12 +37,12 @@ object BattleTiersGUI {
             val freeComponent = BattleTierComponent(
                 plugin, pass,
                 tierType = TierType.FREE,
-                patternPath = "tiers-gui.mask.free-progression-pattern"
+                patternPath = "tiers-gui.split.free-pattern"
             )
             val premiumComponent = BattleTierComponent(
                 plugin, pass,
                 tierType = TierType.PREMIUM,
-                patternPath = "tiers-gui.mask.premium-progression-pattern"
+                patternPath = "tiers-gui.split.premium-pattern"
             )
 
             val totalPages = max(freeComponent.pages, premiumComponent.pages)
@@ -58,8 +59,10 @@ object BattleTiersGUI {
                 addComponent(1, 1, freeComponent)
                 addComponent(1, 1, premiumComponent)
 
-                defaultPage {
-                    freeComponent.getPageOf(it.getTier(pass)).coerceAtLeast(1)
+                if (openAtCurrentTier) {
+                    defaultPage {
+                        freeComponent.getPageOf(it.getTier(pass)).coerceAtLeast(1)
+                    }
                 }
 
                 if (backButton) {
@@ -152,8 +155,10 @@ object BattleTiersGUI {
 
                 addComponent(1, 1, levelComponent)
 
-                defaultPage {
-                    levelComponent.getPageOf(it.getTier(pass)).coerceAtLeast(1)
+                if (openAtCurrentTier) {
+                    defaultPage {
+                        levelComponent.getPageOf(it.getTier(pass)).coerceAtLeast(1)
+                    }
                 }
 
                 if (backButton) {
