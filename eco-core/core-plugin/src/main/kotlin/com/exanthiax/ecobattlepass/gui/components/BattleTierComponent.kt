@@ -61,7 +61,9 @@ class BattleTierComponent(
         fun item() = levelItemCache.get(Pair(player.uniqueId, level)) {
             val tier = pass.getTier(level)!!
 
-            ItemStackBuilder(Items.lookup(plugin.configYml.getString("tiers-gui.buttons.$key.item")))
+            val displayItem = plugin.configYml.getString("tiers-gui.buttons.$key.item")
+            val resolvedItem = InternalPlaceholders.TierPlaceholders.replace(displayItem, tier, pass, player)
+            ItemStackBuilder(Items.lookup(resolvedItem))
                 .setDisplayName(
                     tier.format(plugin.configYml.getString("tiers-gui.buttons.$key.name"), player).firstOrNull() ?: ""
                 )
