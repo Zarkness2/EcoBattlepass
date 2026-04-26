@@ -65,7 +65,8 @@ class DynamicPassCommand(
         }
     }
 
-    /** * Handles: /<pass> claim <tier|all> [free|premium]
+    /**
+     * Handles: /<pass> claim <tier|all> [free|premium]
      */
     private fun handleClaim(player: Player, args: MutableList<String>) {
         val tierArg = args.getOrNull(1)?.lowercase() ?: run {

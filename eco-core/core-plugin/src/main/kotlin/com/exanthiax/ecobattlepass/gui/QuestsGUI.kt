@@ -1,7 +1,5 @@
 @file:Suppress("DEPRECATION")
-
 package com.exanthiax.ecobattlepass.gui
-
 import com.exanthiax.ecobattlepass.categories.Category
 import com.exanthiax.ecobattlepass.plugin
 import com.exanthiax.ecobattlepass.quests.ActiveBattleQuest
@@ -15,19 +13,14 @@ import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.ItemStackBuilder
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
-
 class QuestsGUI(
     private val player: Player, val category: Category, val page: Int = 1,
     val wasBack: Boolean = false
 ) {
-
-    // Helper para resolver placeholders internos + PAPI
     private fun r(s: String) =
         InternalPlaceholders.CategoryPlaceholders.replace(s, category = category, player = player)
-
     private fun rAll(list: List<String>) =
         InternalPlaceholders.CategoryPlaceholders.replaceAll(list, category = category, player = player)
-
     fun open() {
         val pattern = plugin.configYml.getStrings("quests-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
@@ -74,12 +67,6 @@ class QuestsGUI(
         )
         for (slotConfig in plugin.configYml.getSubsections("quests-gui.buttons.custom-slots")) {
             val resolved = slotConfig.clone().apply {
-                fun r(s: String) = InternalPlaceholders.CategoryPlaceholders.replace(
-                    s,
-                    player = player,
-                    category = category
-                )
-
                 set("item", r(getString("item")))
                 set("lore", getStrings("lore").map(::r))
                 listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
@@ -88,7 +75,6 @@ class QuestsGUI(
                     }
                 }
             }
-
             menu.setSlot(
                 resolved.getInt("row"),
                 resolved.getInt("column"),
@@ -112,21 +98,18 @@ class QuestsGUI(
         }
         menu.build().open(player)
     }
-
     private fun getPerPage(): Int {
         return plugin.configYml.getStrings("quests-gui.mask.pattern")
             .sumOf {
                 it.toCharArray().filter { it1 -> it1.equals('q', true) }.size
             }
     }
-
     private fun getMaxPages(): Int {
         val total = category.quests.size
         val perPage = getPerPage()
-        if (perPage <= 0) return 1  // safety
+        if (perPage <= 0) return 1
         return (total + perPage - 1) / perPage
     }
-
     private fun nextSlot(): Slot {
         val nextActive = page < getMaxPages()
         val builder = Slot.builder(
@@ -136,7 +119,6 @@ class QuestsGUI(
                 rAll(plugin.configYml.getFormattedStrings("quests-gui.buttons.next-page.lore.${getActive(nextActive)}"))
             ).build()
         )
-
         if (nextActive) {
             builder.onLeftClick { _, _ ->
                 QuestsGUI(player, category, page + 1, wasBack = wasBack).open()
@@ -144,7 +126,6 @@ class QuestsGUI(
         }
         return builder.build()
     }
-
     private fun prevSlot(): Slot {
         val prevActive = page > 1 || wasBack
         val builder = Slot.builder(
@@ -154,7 +135,6 @@ class QuestsGUI(
                 rAll(plugin.configYml.getStrings("quests-gui.buttons.prev-page.lore.${getActive(prevActive)}"))
             ).build()
         )
-
         if (prevActive) {
             builder.onLeftClick { _, _ ->
                 when {
@@ -165,24 +145,19 @@ class QuestsGUI(
         }
         return builder.build()
     }
-
     private fun getActive(active: Boolean): String {
         return if (active) "active" else "inactive"
     }
-
     private fun slot(pair: ActiveBattleQuest): Slot {
         val itemBuilder = ItemStackBuilder(
-            // CHANGED: aplicar r() para resolver placeholders internos + PAPI
             Items.lookup(r(pair.parent.itemString.replace("%player%", player.name))).item.clone()
         ).setDisplayName(
             pair.getFormattedName(player)
         ).addLoreLines(
             pair.getFormattedLore(player)
         )
-
         return Slot.builder(
             itemBuilder.build()
-        )
-            .build()
+        ).build()
     }
 }

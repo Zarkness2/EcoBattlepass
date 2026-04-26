@@ -169,3 +169,91 @@ tiers:
         tier: free
       - id: elytra_u3m_1
         tier: premium
+    # Per-tier display overrides.
+    # Each state can override: item, name, lore
+    # If a state is not defined here, the global config (tiers-gui.buttons.<state>) is used.
+    # If only some fields are defined (e.g. only 'item'), the rest fall back to global config.
+    display:
+      # Player has NOT reached this tier and it's not the next one
+      locked:
+        item: "%imc_Item-Use_eco::Global::Arrow-Right-Deactive::vanilla%"
+        name: "&4&l✦ MILESTONE TIER 40 ✦"
+        lore:
+          - ""
+          - "&7This is a &cmilestone &7tier!"
+          - "&7Reach tier 40 to unlock exclusive rewards."
+          - ""
+          - "&7Rewards:"
+          - "&7Free: &9%free-rewards%"
+          - "&7Premium: &6%premium-rewards%"
+          - ""
+          - "&cLOCKED"
+
+      # Player is one tier away from unlocking this
+      in-progress:
+        item: brewing_stand
+        name: "&e&l✦ MILESTONE TIER 40 ✦"
+        lore:
+          - ""
+          - "&7You're almost there!"
+          - ""
+          - "&7Rewards:"
+          - "&7Free: &9%free-rewards%"
+          - "&7Premium: &6%premium-rewards%"
+          - ""
+          - "&fProgress:"
+          - "&8» &e%percentage_progress%%"
+          - "&8» &e%current_bp_xp%&8/&7%required_bp_xp% &fXP"
+
+      # Player can claim both free and premium rewards
+      unlocked:
+        item: nether_star
+        name: "&a&l✦ MILESTONE TIER 40 ✦"
+        lore:
+          - ""
+          - "&a&lMILESTONE REACHED!"
+          - ""
+          - "&7Rewards:"
+          - "&7Free: &9%free-rewards%"
+          - "&7Premium: &6%premium-rewards%"
+          - ""
+          - "&a▶ Click to claim!"
+
+      # Player can only claim free rewards (combined mode)
+      unlocked-free:
+        item: nether_star
+        name: "&a&l✦ MILESTONE TIER 40 ✦"
+        lore:
+          - ""
+          - "&a&lMILESTONE REACHED!"
+          - ""
+          - "&7Free: &9%free-rewards%"
+          - "&7Premium: &6%premium-rewards%"
+          - ""
+          - "&a▶ Click to claim free rewards!"
+
+      # Free rewards claimed, but player doesn't have premium
+      premium-required:
+        item: gold_ingot
+        name: "&6&l✦ MILESTONE TIER 40 ✦"
+        lore:
+          - ""
+          - "&7Free rewards claimed!"
+          - ""
+          - "&7Free: %claimed-free-rewards%"
+          - "&7Premium: &6%premium-rewards%"
+          - ""
+          - "&6Purchase the Battle Pass to unlock premium rewards!"
+
+      # All rewards have been claimed
+      claimed:
+        item: dragon_egg
+        name: "&5&l✦ MILESTONE TIER 40 ✦"
+        lore:
+          - ""
+          - "&d&lCOMPLETED!"
+          - ""
+          - "&7Free: %claimed-free-rewards%"
+          - "&7Premium: %claimed-premium-rewards%"
+          - ""
+          - "&a✔ All rewards claimed!"

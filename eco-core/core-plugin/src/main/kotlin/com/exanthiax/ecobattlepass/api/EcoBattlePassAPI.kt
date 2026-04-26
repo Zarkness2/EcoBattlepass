@@ -61,7 +61,7 @@ fun Player.receiveTier(tier: BPTier) {
     val alreadyFree = tier.saveIdFree in current
     val alreadyPremium = tier.saveIdPremium in current
 
-    // Solo dar rewards que no se hayan reclamado por separado
+    // Only grant rewards that haven't been claimed separately
     tier.rewards.filter { reward ->
         reward.isAllowed(this, tier.battlepass) &&
                 !(alreadyFree && reward.tier == TierType.FREE) &&
@@ -70,7 +70,7 @@ fun Player.receiveTier(tier: BPTier) {
         it.reward.grant(this)
     }
 
-    // Consolidar save IDs
+    // Consolidate save IDs
     val cleaned = current - tier.saveIdFree - tier.saveIdPremium
     this.setReceivedTiers(
         tier.battlepass,
@@ -86,10 +86,10 @@ fun Player.receiveTierPremiumOnly(tier: BPTier) {
     val current = this.getReceivedTiers(tier.battlepass)
 
     if (tier.saveIdFree in current) {
-        // Ambos lados reclamados → consolidar a saveId
+        // Both sides claimed → consolidate to saveId
         this.setReceivedTiers(tier.battlepass, current - tier.saveIdFree + tier.saveId)
     } else {
-        // Solo premium reclamado
+        // Only premium claimed
         this.setReceivedTiers(tier.battlepass, current + tier.saveIdPremium)
     }
 }
@@ -102,7 +102,7 @@ fun Player.receiveTierFreeOnly(tier: BPTier) {
     val current = this.getReceivedTiers(tier.battlepass)
 
     if (tier.saveIdPremium in current) {
-        // Ambos lados reclamados → consolidar a saveId
+        // Both sides claimed → consolidate to saveId
         this.setReceivedTiers(tier.battlepass, current - tier.saveIdPremium + tier.saveId)
     } else {
         this.setReceivedTiers(tier.battlepass, current + tier.saveIdFree)

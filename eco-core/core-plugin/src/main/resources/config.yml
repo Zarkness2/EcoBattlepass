@@ -79,8 +79,9 @@ tiers-gui:
   # Layout mode: "combined" (default, original behavior) or "split" (free on one row, premium on another)
   layout: combined
 
-  # Whether to show tiers with no rewards as "claimed" (true) or hide them (false)
-  # Works in both combined and split modes
+  # Whether to show tiers with no rewards as visible or hide them.
+  # true  = Empty tiers show normally (claimed if unlocked, locked/in-progress if not reached yet)
+  # false = Empty tiers are completely hidden (invisible slot)
   show-empty-tiers-as-claimed: true
 
   # If true, opens the tiers menu at the page of the player's current tier.

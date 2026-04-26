@@ -13,6 +13,7 @@ import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.ItemStackBuilder
 import com.willfp.eco.core.placeholder.PlayerlessPlaceholder
 import com.willfp.eco.core.registry.Registrable
+import com.willfp.eco.util.formatEco
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -24,66 +25,7 @@ import kotlin.math.min
 
 class Category(private val _id: String, val config: Config) : Registrable {
     init {
-        PlayerPlaceholder(plugin, "category_completed_quests_${id}") { player ->  
-            this.getCompleted(player).toString()  
-        }.register()
-        
-        PlayerlessPlaceholder(plugin, "category_quest_amount_${id}") {  
-            this.quests.size.toString()  
-        }.register()
-
-        PlayerlessPlaceholder(plugin, "category_${id}_start_date") {
-            val pattern = plugin.configYml.getString("date-format")
-            val formatter = DateTimeFormatter.ofPattern(pattern)
-            this.startDate.format(formatter)
-        }.register()
-
-        PlayerlessPlaceholder(plugin, "category_${id}_start_timer") {
-            val millisLeft = startDate.atZone(ZoneId.systemDefault()).toInstant()
-                .toEpochMilli() - System.currentTimeMillis()
-            if (millisLeft <= 0) {
-                plugin.langYml.getFormattedString("category-in-progress")
-            } else {
-                msToString(millisLeft)
-            }
-        }.register()
-
-        PlayerlessPlaceholder(plugin, "category_${id}_end_date") {
-            val pattern = plugin.configYml.getString("date-format")
-            val formatter = DateTimeFormatter.ofPattern(pattern)
-            this.endDate?.format(formatter)
-        }.register()
-
-        PlayerlessPlaceholder(plugin, "category_${id}_end_timer") {
-            val duration = config.getInt("duration")
-            if (duration == -1) {
-                plugin.langYml.getFormattedString("infinity")
-            } else {
-                val millisLeft = endDate!!.atZone(ZoneId.systemDefault()).toInstant()
-                    .toEpochMilli() - System.currentTimeMillis()
-                if (millisLeft <= 0) {
-                    plugin.langYml.getFormattedString("category-expired")
-                } else {
-                    msToString(millisLeft)
-                }
-            }
-        }.register()
-
-        PlayerlessPlaceholder(plugin, "category_${id}_reset_timer") {
-            val resetTime = config.getInt("reset-time")
-            if (resetTime <= 0) {
-                plugin.langYml.getFormattedString("infinity")
-            } else {
-                val nextReset = this.getNextResetDate()
-                if (nextReset != null) {
-                    val millisLeft = nextReset.atZone(ZoneId.systemDefault()).toInstant()
-                        .toEpochMilli() - System.currentTimeMillis()
-                    msToString(millisLeft.coerceAtLeast(0))
-                } else {
-                    msToString(0)
-                }
-            }
-        }.register()
+        InternalPlaceholders.CategoryPlaceholders.register(this)
     }
 
     override fun getID(): String = _id
@@ -93,7 +35,7 @@ class Category(private val _id: String, val config: Config) : Registrable {
 
     val name = config.getString("name")
     val title = config.getString("gui-title")
-    val item = Items.lookup(config.getString("item"))
+    val itemString = config.getString("item")
     val unformattedLore = config.getStrings("lore")
 
     val startDate: LocalDateTime = run {
@@ -128,7 +70,8 @@ class Category(private val _id: String, val config: Config) : Registrable {
         //val key = this.getDisplayableStatusKey()
         //val formattedTime = msToString(this.getDisplayableMs())
 
-        return ItemStackBuilder(item.item.clone())
+        val resolvedItem = InternalPlaceholders.CategoryPlaceholders.replace(itemString, this, player)
+        return ItemStackBuilder(Items.lookup(resolvedItem).item.clone())
             .setDisplayName(InternalPlaceholders.CategoryPlaceholders.replace(name, this, player))
             .addLoreLines(InternalPlaceholders.CategoryPlaceholders.replaceAll(unformattedLore, this, player))
             .build()
