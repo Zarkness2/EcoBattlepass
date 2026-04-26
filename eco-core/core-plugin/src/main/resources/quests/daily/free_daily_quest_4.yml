@@ -1,5 +1,8 @@
 display:
-  item: player_head head:%player%
+  # Supports PlaceholderAPI placeholders, resolved per-player at display time. Examples:  
+  # item: player_head name:%player_name%         # Player's own head  
+  # item: diamond_sword                          # A simple item 
+  item:  player_head head:%player%
   display-name: 'Daily Quest'
   description: [ ]
 

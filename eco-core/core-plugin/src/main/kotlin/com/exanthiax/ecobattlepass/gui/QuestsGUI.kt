@@ -20,14 +20,19 @@ class QuestsGUI(
     private val player: Player, val category: Category, val page: Int = 1,
     val wasBack: Boolean = false
 ) {
+    private fun r(s: String) =
+        InternalPlaceholders.CategoryPlaceholders.replace(s, category = category, player = player)
+    private fun rAll(list: List<String>) =
+        InternalPlaceholders.CategoryPlaceholders.replaceAll(list, category = category, player = player)
     fun open() {
         val pattern = plugin.configYml.getStrings("quests-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
-            .setTitle(
-                plugin.configYml.getFormattedString("quests-gui.title")
-                    .replace("%page%", page.toString())
-                    .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
-                    .replace("%pass%", category.battlepass.name)
+            .setTitle(r(
+                    plugin.configYml.getFormattedString("quests-gui.title")
+                        .replace("%page%", page.toString())
+                        .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
+                        .replace("%pass%", category.battlepass.name)
+                )
             )
         var row = 1
         var num = ((page - 1) * getPerPage())
@@ -64,12 +69,6 @@ class QuestsGUI(
         )
         for (slotConfig in plugin.configYml.getSubsections("quests-gui.buttons.custom-slots")) {
             val resolved = slotConfig.clone().apply {
-                fun r(s: String) = InternalPlaceholders.CategoryPlaceholders.replace(
-                    s,
-                    player = player,
-                    category = category
-                )
-
                 set("item", r(getString("item")))
                 set("lore", getStrings("lore").map(::r))
                 listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
@@ -91,9 +90,9 @@ class QuestsGUI(
                 plugin.configYml.getInt("quests-gui.buttons.close.column"),
                 Slot.builder(
                     ItemStackBuilder(
-                        Items.lookup(plugin.configYml.getString("quests-gui.buttons.close.material"))
-                    ).setDisplayName(plugin.configYml.getString("quests-gui.buttons.close.name"))
-                        .addLoreLines(plugin.configYml.getFormattedStrings("quests-gui.buttons.close.lore"))
+                        Items.lookup(r(plugin.configYml.getString("quests-gui.buttons.close.material")))
+                    ).setDisplayName(r(plugin.configYml.getString("quests-gui.buttons.close.name")))
+                        .addLoreLines(rAll(plugin.configYml.getStrings("quests-gui.buttons.close.lore")))
                         .build()
                 ).onLeftClick { event, _ ->
                     event.whoClicked.closeInventory()
@@ -113,7 +112,7 @@ class QuestsGUI(
     private fun getMaxPages(): Int {
         val total = category.quests.size
         val perPage = getPerPage()
-        if (perPage <= 0) return 1  // safety
+        if (perPage <= 0) return 1
         return (total + perPage - 1) / perPage
     }
 
@@ -121,9 +120,9 @@ class QuestsGUI(
         val nextActive = page < getMaxPages()
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("quests-gui.buttons.next-page.item.${getActive(nextActive)}"))
+                Items.lookup(r(plugin.configYml.getString("quests-gui.buttons.next-page.item.${getActive(nextActive)}")))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("quests-gui.buttons.next-page.lore.${getActive(nextActive)}")
+                rAll(plugin.configYml.getFormattedStrings("quests-gui.buttons.next-page.lore.${getActive(nextActive)}"))
             ).build()
         )
 
@@ -139,9 +138,9 @@ class QuestsGUI(
         val prevActive = page > 1 || wasBack
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("quests-gui.buttons.prev-page.item.${getActive(prevActive)}"))
+                Items.lookup(r(plugin.configYml.getString("quests-gui.buttons.prev-page.item.${getActive(prevActive)}")))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("quests-gui.buttons.prev-page.lore.${getActive(prevActive)}")
+                rAll(plugin.configYml.getStrings("quests-gui.buttons.prev-page.lore.${getActive(prevActive)}"))
             ).build()
         )
 
@@ -162,7 +161,7 @@ class QuestsGUI(
 
     private fun slot(pair: ActiveBattleQuest): Slot {
         val itemBuilder = ItemStackBuilder(
-            Items.lookup(pair.parent.itemString.replace("%player%", player.name)).item.clone()
+            Items.lookup(r(pair.parent.itemString.replace("%player%", player.name))).item.clone()
         ).setDisplayName(
             pair.getFormattedName(player)
         ).addLoreLines(

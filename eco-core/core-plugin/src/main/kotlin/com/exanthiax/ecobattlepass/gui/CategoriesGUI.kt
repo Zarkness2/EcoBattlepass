@@ -16,12 +16,21 @@ import org.bukkit.entity.Player
 
 class CategoriesGUI(private val player: Player, val pass: BattlePass,
                     val page: Int = 1, val backButton: Boolean = false) {
+
+    // Helper para resolver placeholders internos + PAPI
+    private fun r(s: String) =
+        InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
+
+    private fun rAll(list: List<String>) =
+        InternalPlaceholders.BattlePassPlaceholders.replaceAll(list, battlepass = pass, player = player)
+
     fun open() {
         val pattern = plugin.configYml.getStrings("categories-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
-            .setTitle(plugin.configYml.getFormattedString("categories-gui.title")
-                .replace("%page%", page.toString())
-                .replace("%pass%", pass.name)
+            .setTitle(r(
+                    plugin.configYml.getFormattedString("categories-gui.title")
+                        .replace("%page%", page.toString())
+                )
             )
         var row = 1
         var num = ((page-1)*getPerPage())
@@ -58,12 +67,6 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         )
         for (slotConfig in plugin.configYml.getSubsections("categories-gui.buttons.custom-slots")) {
             val resolved = slotConfig.clone().apply {
-                fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(
-                    s,
-                    player = player,
-                    battlepass = pass
-                )
-
                 set("item", r(getString("item")))
                 set("lore", getStrings("lore").map(::r))
                 listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
@@ -86,9 +89,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
                 plugin.configYml.getInt("categories-gui.buttons.close.column"),
                 Slot.builder(
                     ItemStackBuilder(
-                        Items.lookup(plugin.configYml.getString("categories-gui.buttons.close.material"))
-                    ).setDisplayName(plugin.configYml.getString("categories-gui.buttons.close.name"))
-                        .addLoreLines(plugin.configYml.getFormattedStrings("categories-gui.buttons.close.lore"))
+                        Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.close.material")))
+                    ).setDisplayName(r(plugin.configYml.getString("categories-gui.buttons.close.name")))
+                        .addLoreLines(rAll(plugin.configYml.getStrings("categories-gui.buttons.close.lore")))
                         .build()
                 ).onLeftClick { event, _ ->
                     event.whoClicked.closeInventory()
@@ -117,9 +120,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         val nextActive = page < getMaxPages()
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("categories-gui.buttons.next-page.item.${getActive(nextActive)}"))
+                Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.next-page.item.${getActive(nextActive)}")))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("categories-gui.buttons.next-page.lore.${getActive(nextActive)}")
+                rAll(plugin.configYml.getStrings("categories-gui.buttons.next-page.lore.${getActive(nextActive)}"))
             ).build()
         )
         if (nextActive) {
@@ -134,9 +137,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         val prevActive = page > 1 || backButton
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(plugin.configYml.getString("categories-gui.buttons.prev-page.item.${getActive(prevActive)}"))
+                Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.prev-page.item.${getActive(prevActive)}")))
             ).addLoreLines(
-                plugin.configYml.getFormattedStrings("categories-gui.buttons.prev-page.lore.${getActive(prevActive)}")
+                rAll(plugin.configYml.getStrings("categories-gui.buttons.prev-page.lore.${getActive(prevActive)}"))
             ).build()
         )
 
