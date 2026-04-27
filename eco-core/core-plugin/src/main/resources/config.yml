@@ -78,6 +78,15 @@ battlepass-gui:
 # GUI Configuration for the Tiers GUI (/battlepass tiers)
 tiers-gui:
   title: "EcoBattlepass: Tiers"
+
+  # Layout mode: "combined" (default, original behavior) or "split" (free on one row, premium on another)
+  layout: combined
+
+  # Whether to show tiers with no rewards as visible or hide them.
+  # true  = Empty tiers show normally (claimed if unlocked, locked/in-progress if not reached yet)
+  # false = Empty tiers are completely hidden (invisible slot)
+  show-empty-tiers-as-claimed: true
+
   mask:
     # The way the mask works is by having a list of materials
     # And then a pattern to use those materials.
@@ -100,12 +109,32 @@ tiers-gui:
     progression-pattern:
       # To set the order of the pattern,
       # Use 1-9 and then a-z: a goes after 9.
+      # Used when layout is "combined" (default).
       - "109ab0jkl"
       - "2080c0i0m"
       - "3070d0h0n"
       - "4560efg0o"
       - "00000000p"
       - "00000000q"
+
+  # Split layout configuration (only used when layout is "split")
+  # Each pattern defines where tiers appear for free and premium rows respectively.
+  # Uses the same 1-9 + a-z system as progression-pattern.
+  split:
+    free-pattern:
+      - "000000000"
+      - "123456789"
+      - "000000000"
+      - "000000000"
+      - "000000000"
+      - "000000000"
+    premium-pattern:
+      - "000000000"
+      - "000000000"
+      - "000000000"
+      - "123456789"
+      - "000000000"
+      - "000000000"
 
   buttons:
     # The amount of the item as a function of the level

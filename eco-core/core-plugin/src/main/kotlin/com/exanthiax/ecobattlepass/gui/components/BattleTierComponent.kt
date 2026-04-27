@@ -4,9 +4,11 @@ import com.exanthiax.ecobattlepass.api.getTier
 import com.exanthiax.ecobattlepass.api.hasPremium
 import com.exanthiax.ecobattlepass.api.hasReceivedTier
 import com.exanthiax.ecobattlepass.api.receiveTier
+import com.exanthiax.ecobattlepass.api.receiveTierFreeOnly
 import com.exanthiax.ecobattlepass.api.receiveTierPremiumOnly
 import com.exanthiax.ecobattlepass.battlepass.BattlePass
 import com.exanthiax.ecobattlepass.tiers.BPTier
+import com.exanthiax.ecobattlepass.tiers.TierType
 import com.exanthiax.ecobattlepass.utils.InternalPlaceholders
 import com.exanthiax.ecobattlepass.utils.ReceivedTierState
 import com.github.benmanes.caffeine.cache.Caffeine
@@ -36,50 +38,80 @@ private val levelItemCache = Caffeine.newBuilder()
 
 class BattleTierComponent(
     private val plugin: EcoPlugin,
-    private val pass: BattlePass
+    private val pass: BattlePass,
+    private val tierType: TierType? = null,
+    patternPath: String = "tiers-gui.mask.progression-pattern"
 ) : ProperLevelComponent() {
-    override val pattern: List<String> = plugin.configYml.getStrings("tiers-gui.mask.progression-pattern")
+    override val pattern: List<String> = plugin.configYml.getStrings(patternPath)
     override val maxLevel = pass.maxLevel
 
+    private val showEmptyAsClaimed = plugin.configYml.getBool("tiers-gui.show-empty-tiers-as-claimed")
     private val itemCache = nestedMap<LevelState, Int, ItemStack>()
 
-    override fun getLevelItem(player: Player, menu: Menu, level: Int, levelState: LevelState): ItemStack {
-        val key: String = run {
-            if (levelState == LevelState.UNLOCKED) {
-                when (player.hasReceivedTier(pass, level)) {
-                    ReceivedTierState.RECEIVED -> "claimed"
-                    ReceivedTierState.RECEIVED_FREE -> if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
-                    else -> levelState.key
-                }
-            } else {
-                levelState.key
+    private fun hasRelevantRewards(tier: BPTier): Boolean {
+        return when (tierType) {
+            TierType.FREE -> tier.rewards.any { it.tier == TierType.FREE }
+            TierType.PREMIUM -> tier.rewards.any { it.tier == TierType.PREMIUM }
+            null -> tier.rewards.isNotEmpty()
+        }
+    }
+
+    private fun resolveKey(player: Player, level: Int, levelState: LevelState): String {
+        val tier = pass.getTier(level)
+
+        if (tier == null || !hasRelevantRewards(tier)) {
+            return when {
+                showEmptyAsClaimed -> "claimed"
+                else -> "hidden"
             }
         }
 
-        // plugin.logger.info("Level $level, $key item ${Items.lookup(plugin.configYml.getString("tiers-gui.buttons.$key.item"))}")
+        if (levelState != LevelState.UNLOCKED) {
+            return levelState.key
+        }
+
+        return when (player.hasReceivedTier(pass, level)) {
+            ReceivedTierState.RECEIVED -> "claimed"
+            ReceivedTierState.RECEIVED_FREE -> {
+                if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
+            }
+            else -> levelState.key
+        }
+    }
+
+    override fun getLevelItem(player: Player, menu: Menu, level: Int, levelState: LevelState): ItemStack {
+        val key = resolveKey(player, level, levelState)
+
+        if (key == "hidden") {
+            return ItemStack.empty()
+        }
 
         fun item() = levelItemCache.get(Pair(player.uniqueId, level)) {
-            val tier = pass.getTier(level)!!
+            val tier = pass.getTier(level) ?: BPTier(level, pass)
 
-            val displayItem = plugin.configYml.getString("tiers-gui.buttons.$key.item")
+            val displayItem = tier.config.getStringOrNull("display.$key.item")
+                ?: plugin.configYml.getString("tiers-gui.buttons.$key.item")
+            val displayName = tier.config.getStringOrNull("display.$key.name")
+                ?: plugin.configYml.getString("tiers-gui.buttons.$key.name")
+            val displayLore = if (tier.config.has("display.$key.lore"))
+                tier.config.getStrings("display.$key.lore")
+            else
+                plugin.configYml.getStrings("tiers-gui.buttons.$key.lore")
+
             val resolvedItem = InternalPlaceholders.TierPlaceholders.replace(displayItem, tier, pass, player)
+
             ItemStackBuilder(Items.lookup(resolvedItem))
                 .setDisplayName(
-                    tier.format(plugin.configYml.getString("tiers-gui.buttons.$key.name"), player).firstOrNull() ?: ""
+                    tier.format(displayName, player).firstOrNull() ?: ""
                 )
                 .addLoreLines(
-                    tier.format(
-                        plugin.configYml.getStrings("tiers-gui.buttons.$key.lore"),
-                        player,
-                    )/*.lineWrap(plugin.configYml.getInt("gui.skill-icon.line-wrap"))*/
+                    tier.format(displayLore, player)
                 )
                 .setAmount(
                     evaluateExpression(
                         plugin.configYml.getString("tiers-gui.buttons.item-amount")
                             .replace("%level%", level.toString()),
-                        placeholderContext(
-                            player = player
-                        )
+                        placeholderContext(player = player)
                     ).roundToInt()
                 )
                 .build()
@@ -89,8 +121,6 @@ class BattleTierComponent(
             itemCache[levelState].getOrPut(level) { item() }
         } else {
             item()
-        }.apply {
-            // "Slot $level item $this"
         }
     }
 
@@ -102,32 +132,8 @@ class BattleTierComponent(
         }
     }
 
-    private fun Player.sendPremiumRequiredMessage(tierLevel: Int, tier: BPTier) {
-        val premiumRewardName = tier.rewards
-            .first { it.tier.name.equals("premium", true) }
-            .reward.getDisplayName(this)
-
-        sendMessage(
-            InternalPlaceholders.TierPlaceholders
-                .replace(plugin.langYml.getMessage("premium-required"), tier, pass, this)
-                .replace("%tier%", tierLevel.toString())
-                .replace("%reward%", premiumRewardName)
-        )
-        PlayableSound.create(plugin.configYml.getSubsection("sound.premium-required"))?.playTo(this)
-    }
-
     override fun getLeftClickAction(player: Player, level: Int, levelState: LevelState): () -> Unit {
-        val key: String = run {
-            if (levelState == LevelState.UNLOCKED) {
-                when (player.hasReceivedTier(pass, level)) {
-                    ReceivedTierState.RECEIVED -> "claimed"
-                    ReceivedTierState.RECEIVED_FREE -> if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
-                    else -> levelState.key
-                }
-            } else {
-                levelState.key
-            }
-        }
+        val key = resolveKey(player, level, levelState)
 
         return when (key) {
             "unlocked", "unlocked-free", "premium-required" -> {
@@ -151,20 +157,23 @@ class BattleTierComponent(
                             levelItemCache.invalidate(Pair(player.uniqueId, level))
                             itemCache[levelState].remove(level)
 
-                            if (key == "unlocked") player.receiveTier(tier) else player.receiveTierPremiumOnly(tier)
+                            when (tierType) {
+                                TierType.FREE -> player.receiveTierFreeOnly(tier)
+                                TierType.PREMIUM -> player.receiveTierPremiumOnly(tier)
+                                null -> {
+                                    if (key == "unlocked") player.receiveTier(tier)
+                                    else player.receiveTierPremiumOnly(tier)
+                                }
+                            }
 
                             player.openMenu?.refresh(player)
                         }
                     }
                 }
             }
-
             "locked", "in-progress" -> {
-                {
-                    PlayableSound.create(plugin.configYml.getSubsection("sound.reward-locked"))?.playTo(player)
-                }
+                { PlayableSound.create(plugin.configYml.getSubsection("sound.reward-locked"))?.playTo(player) }
             }
-
             else -> {
                 {}
             }

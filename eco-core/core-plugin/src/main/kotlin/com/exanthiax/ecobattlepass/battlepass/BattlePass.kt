@@ -132,6 +132,13 @@ class BattlePass(private val _id: String, val config: Config): Registrable {
         }.size
     }
 
+    fun getClaimableTiers(player: Player): List<BPTier> {
+        return tiers.filter {
+            player.getTier(this) >= it.number &&
+                    player.hasReceivedTier(this, it.number) != ReceivedTierState.RECEIVED
+        }
+    }
+
     fun resetAll() {
         for (offlinePlayer in Bukkit.getOfflinePlayers()) {
             reset(offlinePlayer)
