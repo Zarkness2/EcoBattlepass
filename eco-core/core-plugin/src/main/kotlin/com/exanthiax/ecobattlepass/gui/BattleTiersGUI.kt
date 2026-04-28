@@ -14,6 +14,7 @@ import com.willfp.eco.core.gui.slot
 import com.willfp.eco.core.gui.slot.ConfigSlot
 import com.willfp.eco.core.gui.slot.FillerMask
 import com.willfp.eco.core.gui.slot.MaskItems
+import com.exanthiax.ecobattlepass.gui.components.LayoutMode
 import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.ItemStackBuilder
 import com.willfp.eco.util.formatEco
@@ -23,13 +24,39 @@ object BattleTiersGUI {
     fun createAndOpen(player: Player, pass: BattlePass, backButton: Boolean = false) {
         val maskPattern = plugin.configYml.getStrings("tiers-gui.mask.pattern").toTypedArray()
         val maskItems = MaskItems.fromItemNames(plugin.configYml.getStrings("tiers-gui.mask.materials"))
-        val layout = plugin.configYml.getStringOrNull("tiers-gui.layout") ?: "combined"
+        //val layout = plugin.configYml.getStringOrNull("tiers-gui.layout") ?: "combined"
+        val layout = LayoutMode.fromConfig(
+            plugin.configYml.getStringOrNull("tiers-gui.layout") ?: "combined"
+        )
         val openAtCurrentTier = plugin.configYml.getBoolOrNull("tiers-gui.open-at-current-tier") ?: true
         fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
         // Build components based on layout
         val components: List<BattleTierComponent>
         val totalPages: Int
-        if (layout.equals("split", ignoreCase = true)) {
+        when (layout) {
+            LayoutMode.SPLIT -> {
+                val freeComponent = BattleTierComponent(
+                    plugin, pass,
+                    tierType = TierType.FREE,
+                    patternPath = "tiers-gui.split.free-pattern"
+                )
+                val premiumComponent = BattleTierComponent(
+                    plugin, pass,
+                    tierType = TierType.PREMIUM,
+                    patternPath = "tiers-gui.split.premium-pattern"
+                )
+                components = listOf(freeComponent, premiumComponent)
+                totalPages = max(freeComponent.pages, premiumComponent.pages)
+            }
+            LayoutMode.COMBINED -> {
+                val levelComponent = BattleTierComponent(plugin, pass)
+                components = listOf(levelComponent)
+                totalPages = levelComponent.pages
+            }
+        }
+
+        /*
+        if (layout == LayoutMode.SPLIT) {
             val freeComponent = BattleTierComponent(
                 plugin, pass,
                 tierType = TierType.FREE,
@@ -47,23 +74,18 @@ object BattleTiersGUI {
             components = listOf(levelComponent)
             totalPages = levelComponent.pages
         }
+        */
         // Calculate the default page before building the menu (needed for initial title)
         val defaultPageNum = if (openAtCurrentTier) {
             components.first().getPageOf(player.getTier(pass)).coerceAtLeast(1)
         } else {
             1
         }
-        // Title builder with %page% and %max_page% support
-        val titleTemplate = plugin.configYml.getString("tiers-gui.title")
-            .replace("%pass%", pass.name)
-        fun buildTitle(page: Int): String {
-            return titleTemplate
-                .replace("%page%", page.toString())
-                .replace("%max_page%", totalPages.toString())
-                .formatEco()
-        }
+
         val menu = menu(maskPattern.size) {
-            title = buildTitle(defaultPageNum)
+            title = plugin.configYml.getString("tiers-gui.title")
+                .replace("%pass%", pass.name)
+                .formatEco()
             maxPages(totalPages)
             setMask(FillerMask(maskItems, *maskPattern))
             components.forEach { addComponent(1, 1, it) }
@@ -71,10 +93,6 @@ object BattleTiersGUI {
                 defaultPage {
                     components.first().getPageOf(it.getTier(pass)).coerceAtLeast(1)
                 }
-            }
-            // Update title dynamically on page change (Paper 1.20+)
-            onEvent<PageChangeEvent> { eventPlayer, _, event ->
-                eventPlayer.openInventory.setTitle(buildTitle(event.newPage))
             }
             // Back button (shows on first page instead of prev-page)
             if (backButton) {

@@ -1,5 +1,5 @@
-name: ${pluginName}
-version: ${version}
+name: EcoBattlepass
+version: 2.3.0
 main: com.exanthiax.ecobattlepass.EcoBattlePass
 author: Exanthiax, _OfTeN_, Auxilor
 api-version: 1.19
