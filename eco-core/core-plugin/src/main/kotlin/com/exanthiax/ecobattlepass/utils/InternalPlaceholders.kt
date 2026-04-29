@@ -92,7 +92,7 @@ object InternalPlaceholders {
                     ?: return@PlayerDynamicPlaceholder "Invalid tier"
                 val tier = battlepass.getTier(tierNumber)
                     ?: return@PlayerDynamicPlaceholder "Invalid tier"
-                val lines = tier.format("%free-rewards%", player)
+                val lines = tier.format("%premium-rewards%", player)
                 lines.getOrElse(lineIndex) { "" }
             }.register()
 

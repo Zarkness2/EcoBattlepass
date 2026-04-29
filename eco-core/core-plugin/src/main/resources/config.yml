@@ -83,10 +83,12 @@ tiers-gui:
   layout: combined
 
   # How to display tiers with no rewards:
-  # "hidden" - Empty tiers are not shown (invisible in the GUI)
-  # "behind-level" - Empty tiers at or below the player's level show as claimed; others show their normal state
-  # "all" - All empty tiers show as claimed regardless of level
-  empty-tier-display-mode: "behind-level"
+  # "normal"              - Empty tiers show with their real state (original behavior)
+  # "hidden"              - All empty tiers are invisible
+  # "hidden-behind-level" - Empty tiers at or below the player's level are hidden; others show normal
+  # "behind-level"        - Empty tiers at or below the player's level show as claimed; others show normal
+  # "all"                 - All empty tiers show as claimed regardless of level
+  empty-tier-display-mode: "normal"
 
   mask:
     # The way the mask works is by having a list of materials

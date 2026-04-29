@@ -173,8 +173,8 @@ class BattleTierComponent(
                 placeholderContext(player = player)
             ).roundToInt().coerceIn(1, maxItemAmount)
             val builtItem = ItemStackBuilder(Items.lookup(resolvedItem))
-                .setDisplayName(tier.format(displayName, player).firstOrNull() ?: "")
-                .addLoreLines(tier.format(displayLore, player))
+                .setDisplayName(tier.format(displayName, player, tierType).firstOrNull() ?: "")
+                .addLoreLines(tier.format(displayLore, player, tierType))
                 .setAmount(amount)
                 .build()
             if (maxItemAmount > 64) {
