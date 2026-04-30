@@ -47,14 +47,8 @@ class BattleTierComponent(
     override val pattern: List<String> = plugin.configYml.getStrings(patternPath)
     override val maxLevel = pass.maxLevel
     private val itemCache = nestedMap<LevelState, Int, ItemStack>()
-    /*
-    private val showEmptyAsClaimed: Boolean =
-        plugin.configYml.getBoolOrNull("tiers-gui.show-empty-tiers-as-claimed") ?: true
-    */
     private val emptyTierDisplayMode: EmptyDisplayMode =
         EmptyDisplayMode.fromConfig(plugin.configYml.getString("tiers-gui.empty-tier-display-mode"))
-    private val maxItemAmount: Int =
-        (plugin.configYml.getIntOrNull("tiers-gui.buttons.max-item-amount") ?: 64).coerceIn(1, 99)
     private fun hasRelevantRewards(tier: BPTier): Boolean {
         return when (tierType) {
             TierType.FREE -> tier.rewards.any { it.tier == TierType.FREE }
@@ -118,41 +112,6 @@ class BattleTierComponent(
         }
     }
 
-    /*
-    private fun resolveKey(player: Player, level: Int, levelState: LevelState): String {
-        val tier = pass.getTier(level)
-        if (tier == null) {
-            return if (showEmptyAsClaimed) "claimed" else "hidden"
-        }
-        if (!hasRelevantRewards(tier)) {
-            return when {
-                !showEmptyAsClaimed -> "hidden"
-                levelState == LevelState.UNLOCKED -> "claimed"
-                else -> levelState.key
-            }
-        }
-        if (levelState != LevelState.UNLOCKED) {
-            return levelState.key
-        }
-        val receivedState = player.hasReceivedTier(pass, level)
-        return when (tierType) {
-            TierType.FREE -> when (receivedState) {
-                ReceivedTierState.RECEIVED, ReceivedTierState.RECEIVED_FREE -> "claimed"
-                else -> "unlocked"
-            }
-            TierType.PREMIUM -> when (receivedState) {
-                ReceivedTierState.RECEIVED, ReceivedTierState.RECEIVED_PREMIUM -> "claimed"
-                else -> if (player.hasPremium(pass)) "unlocked" else "premium-required"
-            }
-            null -> when (receivedState) {
-                ReceivedTierState.RECEIVED -> "claimed"
-                ReceivedTierState.RECEIVED_FREE -> if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
-                ReceivedTierState.RECEIVED_PREMIUM -> "unlocked"
-                else -> levelState.key
-            }
-        }
-    }
-*/
     override fun getLevelItem(player: Player, menu: Menu, level: Int, levelState: LevelState): ItemStack {
         val key = resolveKey(player, level, levelState)
         if (key == "hidden") return ItemStack.empty()
@@ -171,17 +130,12 @@ class BattleTierComponent(
                 plugin.configYml.getString("tiers-gui.buttons.item-amount")
                     .replace("%level%", level.toString()),
                 placeholderContext(player = player)
-            ).roundToInt().coerceIn(1, maxItemAmount)
+            ).roundToInt().coerceAtLeast(1)
             val builtItem = ItemStackBuilder(Items.lookup(resolvedItem))
                 .setDisplayName(tier.format(displayName, player, tierType).firstOrNull() ?: "")
                 .addLoreLines(tier.format(displayLore, player, tierType))
                 .setAmount(amount)
                 .build()
-            if (maxItemAmount > 64) {
-                val meta = builtItem.itemMeta
-                meta.setMaxStackSize(maxItemAmount)
-                builtItem.itemMeta = meta
-            }
             builtItem
         }
         return if (levelState != LevelState.IN_PROGRESS) {
