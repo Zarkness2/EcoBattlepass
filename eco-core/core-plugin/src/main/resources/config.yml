@@ -29,9 +29,9 @@ battlepass-gui:
 
   buttons:
     tiers:
-      # Supports PlaceholderAPI placeholders, resolved per-player at display time. Examples:  
+      # Supports PlaceholderAPI placeholders, resolved per-player at display time. Examples:
       # item: player_head name:%player_name%         # Player's own head
-      # item: diamond_sword                          # A simple item 
+      # item: diamond_sword                          # A simple item
       item: lime_stained_glass_pane
       name: "&aTiers"
       lore:
@@ -73,7 +73,7 @@ battlepass-gui:
         column: 5
 
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
-    custom-slots: [ ]
+    custom-slots: []
 
 # GUI Configuration for the Tiers GUI (/battlepass tiers)
 tiers-gui:
@@ -82,10 +82,13 @@ tiers-gui:
   # Layout mode: "combined" (default, original behavior) or "split" (free on one row, premium on another)
   layout: combined
 
-  # Whether to show tiers with no rewards as visible or hide them.
-  # true  = Empty tiers show normally (claimed if unlocked, locked/in-progress if not reached yet)
-  # false = Empty tiers are completely hidden (invisible slot)
-  show-empty-tiers-as-claimed: true
+  # How to display tiers with no rewards:
+  # "normal"              - Empty tiers show with their real state (original behavior)
+  # "hidden"              - All empty tiers are invisible
+  # "hidden-behind-level" - Empty tiers at or below the player's level are hidden; others show normal
+  # "behind-level"        - Empty tiers at or below the player's level show as claimed; others show normal
+  # "all"                 - All empty tiers show as claimed regardless of level
+  empty-tier-display-mode: "normal"
 
   mask:
     # The way the mask works is by having a list of materials
@@ -256,7 +259,7 @@ tiers-gui:
         - "&aCLAIMED"
 
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
-    custom-slots: [ ]
+    custom-slots: []
 
 # GUI Configuration for the Categories GUI (/battlepass quests)
 categories-gui:
@@ -288,8 +291,8 @@ categories-gui:
         active: orange_stained_glass_pane name:"&aNext page"
         inactive: gray_stained_glass_pane
       lore:
-        active: [ ]
-        inactive: [ ]
+        active: []
+        inactive: []
       row: 5
       column: 6
     prev-page:
@@ -297,8 +300,8 @@ categories-gui:
         active: orange_stained_glass_pane name:"&aPrevious page"
         inactive: gray_stained_glass_pane
       lore:
-        active: [ ]
-        inactive: [ ]
+        active: []
+        inactive: []
       row: 5
       column: 4
     close:
@@ -312,7 +315,7 @@ categories-gui:
     # https://exanthiax.gitbook.io/ecobattlepass/useful/internal-placeholders#battlepass-and-category-gui
 
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
-    custom-slots: [ ]
+    custom-slots: []
 
 # GUI Configuration for the Quests GUI
 quests-gui:
@@ -344,8 +347,8 @@ quests-gui:
         active: orange_stained_glass_pane name:"&aNext page"
         inactive: black_stained_glass_pane name:" "
       lore:
-        active: [ ]
-        inactive: [ ]
+        active: []
+        inactive: []
       row: 5
       column: 6
     prev-page:
@@ -353,8 +356,8 @@ quests-gui:
         active: orange_stained_glass_pane name:"&aPrevious page"
         inactive: black_stained_glass_pane name:" "
       lore:
-        active: [ ]
-        inactive: [ ]
+        active: []
+        inactive: []
       row: 5
       column: 4
     close:
@@ -368,7 +371,7 @@ quests-gui:
     # https://exanthiax.gitbook.io/ecobattlepass/useful/internal-placeholders#quest-gui
 
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
-    custom-slots: [ ]
+    custom-slots: []
 
 # GUI Configuration for the Quest Icon
 quests-icon:
