@@ -14,10 +14,12 @@ import com.willfp.eco.core.items.builder.ItemStackBuilder
 import com.willfp.eco.core.sound.PlayableSound
 import org.bukkit.entity.Player
 
-class CategoriesGUI(private val player: Player, val pass: BattlePass,
-                    val page: Int = 1, val backButton: Boolean = false) {
+class CategoriesGUI(
+    private val player: Player, val pass: BattlePass,
+    val page: Int = 1, val backButton: Boolean = false
+) {
 
-    // Helper para resolver placeholders internos + PAPI
+    // Helper for handling internal placeholders + PAPI
     private fun r(s: String) =
         InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
 
@@ -27,24 +29,25 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
     fun open() {
         val pattern = plugin.configYml.getStrings("categories-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
-            .setTitle(r(
+            .setTitle(
+                r(
                     plugin.configYml.getFormattedString("categories-gui.title")
                         .replace("%page%", page.toString())
                 )
             )
         var row = 1
-        var num = ((page-1)*getPerPage())
+        var num = ((page - 1) * getPerPage())
         pattern.forEach {
             var col = 1
-            it.toCharArray().forEach {
-                    s -> kotlin.run {
-                if (s.equals('c', true)) {
-                    if (num < pass.categories.size) {
-                        menu.setSlot(row, col, slot(pass.categories.toList()[num]))
+            it.toCharArray().forEach { s ->
+                kotlin.run {
+                    if (s.equals('c', true)) {
+                        if (num < pass.categories.size) {
+                            menu.setSlot(row, col, slot(pass.categories.toList()[num]))
+                        }
+                        num++
                     }
-                    num++
                 }
-            }
                 col++
             }
             row++
@@ -147,7 +150,7 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
             builder.onLeftClick { _, _ ->
                 when {
                     page > 1 -> CategoriesGUI(player, pass, page - 1, backButton).open()
-                    backButton -> BattlePassGUI.createAndOpen(player, pass)
+                    else -> BattlePassGUI.createAndOpen(player, pass) // Se cambió 'backButton' por 'else'
                 }
             }
         }

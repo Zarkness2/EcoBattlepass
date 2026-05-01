@@ -52,33 +52,25 @@ abstract class ProperLevelComponent : AutofillComponent() {
         }
         .build()
 
-        override fun getSlotAt(row: Int, column: Int, player: Player, menu: Menu): Slot? {
-            if (!isBuilt) {
-                build()
-            }
+    override fun getSlotAt(row: Int, column: Int, player: Player, menu: Menu): Slot? {
+        if (!isBuilt) {
+            build()
+        }
 
-            val position = GUIPosition(row, column)
-            val page = menu.getPage(player)
+        val position = GUIPosition(row, column)
 
-            // Check if it's already cached (including marked nulls)
-            val cached = slots[position]
-            if (cached.containsKey(page)) {
-                return cached[page]
-            }
-
+        return slots[position].getOrPut(menu.getPage(player)) {
             val offset = progressionSlots[position] ?: return null
-            val base = (page - 1) * levelsPerPage
+            val base = (menu.getPage(player) - 1) * levelsPerPage
             val level = offset + base
 
             if (level > maxLevel) {
-                // DO NOT store null in ConcurrentHashMap — just return null
-                return null
+                null
+            } else {
+                buildSlot(level)
             }
-
-            val slot = buildSlot(level)
-            cached[page] = slot  // Only store non-null values
-            return slot
         }
+    }
 
     private var _levelsPerPage by Delegates.notNull<Int>()
 

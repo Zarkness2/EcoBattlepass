@@ -35,20 +35,22 @@ private val levelItemCache = Caffeine.newBuilder()
         TimeUnit.MILLISECONDS
     )
     .build<Triple<UUID, Int, TierType?>, ItemStack>()
+
 fun invalidateTierItemCache() {
     levelItemCache.invalidateAll()
 }
+
 class BattleTierComponent(
     private val plugin: EcoPlugin,
     private val pass: BattlePass,
     private val tierType: TierType? = null,
-    patternPath: String = "tiers-gui.mask.progression-pattern"
+    patternPath: String = "tiers-gui.mask.progression-pattern",
+    private val emptyTierDisplayMode: EmptyDisplayMode = EmptyDisplayMode.NORMAL
 ) : ProperLevelComponent() {
     override val pattern: List<String> = plugin.configYml.getStrings(patternPath)
     override val maxLevel = pass.maxLevel
     private val itemCache = nestedMap<LevelState, Int, ItemStack>()
-    private val emptyTierDisplayMode: EmptyDisplayMode =
-        EmptyDisplayMode.fromConfig(plugin.configYml.getString("tiers-gui.empty-tier-display-mode"))
+
     private fun hasRelevantRewards(tier: BPTier): Boolean {
         return when (tierType) {
             TierType.FREE -> tier.rewards.any { it.tier == TierType.FREE }
@@ -60,38 +62,46 @@ class BattleTierComponent(
     private fun resolveKey(player: Player, level: Int, levelState: LevelState): String {
         val tier = pass.getTier(level)
 
-        // 1. Manejo de Tiers vacíos o no relevantes (Lógica de la Opción 1 - Flexible)
-        if (tier == null || !hasRelevantRewards(tier)) {
+        // 1. Null tier — always handle here (there is no BPTier to check hasReceivedTier)
+        tier ?: return when (emptyTierDisplayMode) {
+            EmptyDisplayMode.HIDDEN -> "hidden"
+            EmptyDisplayMode.HIDDEN_BEHIND_LEVEL -> if (levelState == LevelState.UNLOCKED) "hidden" else levelState.key
+            EmptyDisplayMode.ALL_CLAIMED -> "claimed"
+            EmptyDisplayMode.BEHIND_LEVEL -> if (levelState == LevelState.UNLOCKED) "claimed" else levelState.key
+            EmptyDisplayMode.NORMAL -> levelState.key
+        }
+
+        // 2. Tier with no relevant rewards + NOT normal mode → apply special display mode
+        //    In NORMAL mode, empty tiers fall back to the normal logic (step 3+)
+        //    so that hasReceivedTier works and they are marked as claimed upon clicking
+        if (!hasRelevantRewards(tier) && emptyTierDisplayMode != EmptyDisplayMode.NORMAL) {
             return when (emptyTierDisplayMode) {
                 EmptyDisplayMode.HIDDEN -> "hidden"
-                EmptyDisplayMode.HIDDEN_BEHIND_LEVEL -> when {
-                    levelState == LevelState.UNLOCKED -> "hidden"
-                    else -> levelState.key
-                }
+                EmptyDisplayMode.HIDDEN_BEHIND_LEVEL -> if (levelState == LevelState.UNLOCKED) "hidden" else levelState.key
                 EmptyDisplayMode.ALL_CLAIMED -> "claimed"
                 EmptyDisplayMode.BEHIND_LEVEL -> if (levelState == LevelState.UNLOCKED) "claimed" else levelState.key
-                EmptyDisplayMode.NORMAL -> levelState.key
             }
         }
 
-        // 2. Si el nivel está bloqueado, no perdemos tiempo calculando recompensas
+        // 3. If the tier is locked, we don’t waste time calculating rewards
         if (levelState != LevelState.UNLOCKED) {
             return levelState.key
         }
 
-        // 3. Lógica de Recompensas (Lógica de la Opción 2 - Robusta)
+        // 4. Rewards Logic
         val receivedState = player.hasReceivedTier(pass, level)
 
         return when (tierType) {
             TierType.FREE -> {
                 if (receivedState == ReceivedTierState.RECEIVED ||
-                    receivedState == ReceivedTierState.RECEIVED_FREE) "claimed"
+                    receivedState == ReceivedTierState.RECEIVED_FREE
+                ) "claimed"
                 else "unlocked"
             }
 
             TierType.PREMIUM -> {
                 val isReceived = receivedState == ReceivedTierState.RECEIVED ||
-                                receivedState == ReceivedTierState.RECEIVED_PREMIUM
+                        receivedState == ReceivedTierState.RECEIVED_PREMIUM
 
                 when {
                     isReceived -> "claimed"
@@ -100,12 +110,13 @@ class BattleTierComponent(
                 }
             }
 
-            // Caso para tiers mixtos o genéricos
+            // Case for mixed or generic tiers (combined mode)
             null -> when (receivedState) {
                 ReceivedTierState.RECEIVED -> "claimed"
                 ReceivedTierState.RECEIVED_FREE -> {
                     if (player.hasPremium(pass)) "unlocked-free" else "premium-required"
                 }
+
                 ReceivedTierState.RECEIVED_PREMIUM -> "unlocked"
                 else -> levelState.key
             }
@@ -115,6 +126,7 @@ class BattleTierComponent(
     override fun getLevelItem(player: Player, menu: Menu, level: Int, levelState: LevelState): ItemStack {
         val key = resolveKey(player, level, levelState)
         if (key == "hidden") return ItemStack.empty()
+
         fun item() = levelItemCache.get(Triple(player.uniqueId, level, tierType)) {
             val tier = pass.getTier(level) ?: BPTier(level, pass)
             val displayItem = tier.config.getStringOrNull("display.$key.item")
@@ -131,6 +143,7 @@ class BattleTierComponent(
                     .replace("%level%", level.toString()),
                 placeholderContext(player = player)
             ).roundToInt().coerceAtLeast(1)
+
             val builtItem = ItemStackBuilder(Items.lookup(resolvedItem))
                 .setDisplayName(tier.format(displayName, player, tierType).firstOrNull() ?: "")
                 .addLoreLines(tier.format(displayLore, player, tierType))
@@ -138,12 +151,14 @@ class BattleTierComponent(
                 .build()
             builtItem
         }
+
         return if (levelState != LevelState.IN_PROGRESS) {
             itemCache[levelState].getOrPut(level) { item() }
         } else {
             item()
         }
     }
+
     override fun getLevelState(player: Player, level: Int): LevelState {
         return when {
             level <= player.getTier(pass) -> LevelState.UNLOCKED
@@ -151,6 +166,7 @@ class BattleTierComponent(
             else -> LevelState.LOCKED
         }
     }
+
     private fun Player.sendPremiumRequiredMessage(tierLevel: Int, tier: BPTier) {
         val premiumRewardName = tier.rewards
             .firstOrNull { it.tier.name.equals("premium", true) }
@@ -163,9 +179,9 @@ class BattleTierComponent(
         )
         PlayableSound.create(plugin.configYml.getSubsection("sound.premium-required"))?.playTo(this)
     }
+
     override fun getLeftClickAction(player: Player, level: Int, levelState: LevelState): () -> Unit {
-        val key = resolveKey(player, level, levelState)
-        return when (key) {
+        return when (val key = resolveKey(player, level, levelState)) {
             "unlocked", "unlocked-free", "premium-required" -> {
                 {
                     val tier = pass.getTier(level)
@@ -190,10 +206,14 @@ class BattleTierComponent(
                     }
                 }
             }
+
             "locked", "in-progress" -> {
                 { PlayableSound.create(plugin.configYml.getSubsection("sound.reward-locked"))?.playTo(player) }
             }
-            else -> { {} }
+
+            else -> {
+                {}
+            }
         }
     }
 }
