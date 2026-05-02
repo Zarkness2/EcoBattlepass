@@ -95,12 +95,6 @@ object BattlePassGUI {
 
             for (slotConfig in plugin.configYml.getSubsections("battlepass-gui.buttons.custom-slots")) {
                 val resolved = slotConfig.clone().apply {
-                    fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(
-                        s,
-                        player = player,
-                        battlepass = pass
-                    )
-
                     set("item", r(getString("item")))
                     set("lore", getStrings("lore").map(::r))
                     listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->

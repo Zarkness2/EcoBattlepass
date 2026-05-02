@@ -22,12 +22,15 @@ class QuestsGUI(
 ) {
     private fun r(s: String) =
         InternalPlaceholders.CategoryPlaceholders.replace(s, category = category, player = player)
+
     private fun rAll(list: List<String>) =
         InternalPlaceholders.CategoryPlaceholders.replaceAll(list, category = category, player = player)
+
     fun open() {
         val pattern = plugin.configYml.getStrings("quests-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
-            .setTitle(r(
+            .setTitle(
+                r(
                     plugin.configYml.getFormattedString("quests-gui.title")
                         .replace("%page%", page.toString())
                         .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
@@ -148,7 +151,11 @@ class QuestsGUI(
             builder.onLeftClick { _, _ ->
                 when {
                     page > 1 -> QuestsGUI(player, category, page - 1, wasBack = wasBack).open()
-                    wasBack -> CategoriesGUI(player, category.battlepass, backButton = wasBack).open()
+                    else -> CategoriesGUI(
+                        player,
+                        category.battlepass,
+                        backButton = true
+                    ).open()
                 }
             }
         }

@@ -31,7 +31,7 @@ class CategoriesGUI(
         val menu = Menu.builder(pattern.size)
             .setTitle(
                 r(
-                    plugin.configYml.getFormattedString("categories-gui.title")
+                    plugin.configYml.getString("categories-gui.title")
                         .replace("%page%", page.toString())
                 )
             )
@@ -150,7 +150,7 @@ class CategoriesGUI(
             builder.onLeftClick { _, _ ->
                 when {
                     page > 1 -> CategoriesGUI(player, pass, page - 1, backButton).open()
-                    else -> BattlePassGUI.createAndOpen(player, pass) // Se cambió 'backButton' por 'else'
+                    else -> BattlePassGUI.createAndOpen(player, pass) // 'backButton' was changed to 'else'
                 }
             }
         }

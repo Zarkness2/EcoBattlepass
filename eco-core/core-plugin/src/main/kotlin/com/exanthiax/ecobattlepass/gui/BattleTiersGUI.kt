@@ -41,6 +41,8 @@ object BattleTiersGUI {
         val maskPattern = plugin.configYml.getStrings("tiers-gui.mask.pattern").toTypedArray()
         val maskItems = MaskItems.fromItemNames(plugin.configYml.getStrings("tiers-gui.mask.materials"))
 
+        fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
+
         val components: List<BattleTierComponent>
         val totalPages: Int
 
@@ -73,7 +75,7 @@ object BattleTiersGUI {
         }
 
         val menu = menu(maskPattern.size) {
-            title = plugin.configYml.getString("tiers-gui.title")
+            title = r(plugin.configYml.getString("tiers-gui.title"))
                 .replace("%pass%", pass.name)
                 .formatEco()
 
@@ -94,8 +96,8 @@ object BattleTiersGUI {
                     plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.row"),
                     plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.column"),
                     slot(
-                        ItemStackBuilder(Items.lookup(plugin.configYml.getString("tiers-gui.buttons.prev-page.material")))
-                            .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.prev-page.name"))
+                        ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.prev-page.material"))))
+                            .setDisplayName(r(plugin.configYml.getString("tiers-gui.buttons.prev-page.name")))
                             .build()
                     ) {
                         onLeftClick { _, _ ->
@@ -109,8 +111,8 @@ object BattleTiersGUI {
                 plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.row"),
                 plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.column"),
                 PageChanger(
-                    ItemStackBuilder(Items.lookup(plugin.configYml.getString("tiers-gui.buttons.prev-page.material")))
-                        .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.prev-page.name"))
+                    ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.prev-page.material"))))
+                        .setDisplayName(r(plugin.configYml.getString("tiers-gui.buttons.prev-page.name")))
                         .build(),
                     PageChanger.Direction.BACKWARDS
                 )
@@ -120,8 +122,8 @@ object BattleTiersGUI {
                 plugin.configYml.getInt("tiers-gui.buttons.next-page.location.row"),
                 plugin.configYml.getInt("tiers-gui.buttons.next-page.location.column"),
                 PageChanger(
-                    ItemStackBuilder(Items.lookup(plugin.configYml.getString("tiers-gui.buttons.next-page.material")))
-                        .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.next-page.name"))
+                    ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.next-page.material"))))
+                        .setDisplayName(r(plugin.configYml.getString("tiers-gui.buttons.next-page.name")))
                         .build(),
                     PageChanger.Direction.FORWARDS
                 )
@@ -132,8 +134,8 @@ object BattleTiersGUI {
                     plugin.configYml.getInt("tiers-gui.buttons.close.location.row"),
                     plugin.configYml.getInt("tiers-gui.buttons.close.location.column"),
                     slot(
-                        ItemStackBuilder(Items.lookup(plugin.configYml.getString("tiers-gui.buttons.close.material")))
-                            .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.close.name"))
+                        ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.close.material"))))
+                            .setDisplayName(r(plugin.configYml.getString("tiers-gui.buttons.close.name")))
                             .build()
                     ) {
                         onLeftClick { event, _ ->
@@ -144,12 +146,6 @@ object BattleTiersGUI {
 
             for (slotConfig in plugin.configYml.getSubsections("tiers-gui.buttons.custom-slots")) {
                 val resolved = slotConfig.clone().apply {
-                    fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(
-                        s,
-                        player = player,
-                        battlepass = pass
-                    )
-
                     set("item", r(getString("item")))
                     set("lore", getStrings("lore").map(::r))
                     listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
