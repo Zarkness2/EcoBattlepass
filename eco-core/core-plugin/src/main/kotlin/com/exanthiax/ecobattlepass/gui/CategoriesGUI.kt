@@ -19,7 +19,6 @@ class CategoriesGUI(
     val page: Int = 1, val backButton: Boolean = false
 ) {
 
-    // Helper for handling internal placeholders + PAPI
     private fun r(s: String) =
         InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
 
@@ -68,9 +67,17 @@ class CategoriesGUI(
             plugin.configYml.getInt("categories-gui.buttons.prev-page.column"),
             prevSlot()
         )
+
         for (slotConfig in plugin.configYml.getSubsections("categories-gui.buttons.custom-slots")) {
             val resolved = slotConfig.clone().apply {
-                set("item", r(getString("item")))
+                val nameKey = getStringOrNull("name")
+                val itemStr = r(getString("item"))
+                // Si hay name separado y el item no tiene name inline, inyectarlo
+                if (nameKey != null && !itemStr.contains("name:")) {
+                    set("item", "$itemStr name:\"${r(nameKey)}\"")
+                } else {
+                    set("item", itemStr)
+                }
                 set("lore", getStrings("lore").map(::r))
                 listOf("left-click", "right-click", "shift-left-click", "shift-right-click").forEach { click ->
                     if (this.has(click)) {
@@ -90,15 +97,7 @@ class CategoriesGUI(
             menu.setSlot(
                 plugin.configYml.getInt("categories-gui.buttons.close.row"),
                 plugin.configYml.getInt("categories-gui.buttons.close.column"),
-                Slot.builder(
-                    ItemStackBuilder(
-                        Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.close.material")))
-                    ).setDisplayName(r(plugin.configYml.getString("categories-gui.buttons.close.name")))
-                        .addLoreLines(rAll(plugin.configYml.getStrings("categories-gui.buttons.close.lore")))
-                        .build()
-                ).onLeftClick { event, _ ->
-                    event.whoClicked.closeInventory()
-                }.build()
+                buildCloseSlot("categories-gui.buttons.close")
             )
         }
 
@@ -121,12 +120,9 @@ class CategoriesGUI(
 
     private fun nextSlot(): Slot {
         val nextActive = page < getMaxPages()
+        val state = if (nextActive) "active" else "inactive"
         val builder = Slot.builder(
-            ItemStackBuilder(
-                Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.next-page.item.${getActive(nextActive)}")))
-            ).addLoreLines(
-                rAll(plugin.configYml.getStrings("categories-gui.buttons.next-page.lore.${getActive(nextActive)}"))
-            ).build()
+            buildPageItem("categories-gui.buttons.next-page", state)
         )
         if (nextActive) {
             builder.onLeftClick { _, _ ->
@@ -138,27 +134,75 @@ class CategoriesGUI(
 
     private fun prevSlot(): Slot {
         val prevActive = page > 1 || backButton
+        val state = if (prevActive) "active" else "inactive"
         val builder = Slot.builder(
-            ItemStackBuilder(
-                Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.prev-page.item.${getActive(prevActive)}")))
-            ).addLoreLines(
-                rAll(plugin.configYml.getStrings("categories-gui.buttons.prev-page.lore.${getActive(prevActive)}"))
-            ).build()
+            buildPageItem("categories-gui.buttons.prev-page", state)
         )
 
         if (prevActive) {
             builder.onLeftClick { _, _ ->
                 when {
                     page > 1 -> CategoriesGUI(player, pass, page - 1, backButton).open()
-                    else -> BattlePassGUI.createAndOpen(player, pass) // 'backButton' was changed to 'else'
+                    else -> BattlePassGUI.createAndOpen(player, pass)
                 }
             }
         }
         return builder.build()
     }
 
-    private fun getActive(active: Boolean): String {
-        return if (active) "active" else "inactive"
+    /**
+     * Builds an ItemStack for a page changer button (next-page / prev-page).
+     * Supports 3 config formats:
+     *   1) item.active/inactive with inline name  (old)
+     *   2) item.active/inactive + name.active/inactive  (new)
+     *   3) material + name  (legacy tiers-gui style)
+     */
+    private fun buildPageItem(basePath: String, state: String): org.bukkit.inventory.ItemStack {
+        // Item: try item.state → item → material
+        val itemString = plugin.configYml.getStringOrNull("$basePath.item.$state")
+            ?: plugin.configYml.getStringOrNull("$basePath.item")
+            ?: plugin.configYml.getString("$basePath.material")
+
+        val itemBuilder = ItemStackBuilder(Items.lookup(r(itemString)))
+
+        // Name: try name.state → name (only if separate key exists)
+        val name = plugin.configYml.getStringOrNull("$basePath.name.$state")
+            ?: plugin.configYml.getStringOrNull("$basePath.name")
+        if (name != null) {
+            itemBuilder.setDisplayName(r(name))
+        }
+
+        // Lore: try lore.state → lore
+        val lore = plugin.configYml.getStringsOrNull("$basePath.lore.$state")
+            ?: plugin.configYml.getStringsOrNull("$basePath.lore")
+            ?: emptyList()
+        itemBuilder.addLoreLines(rAll(lore))
+
+        return itemBuilder.build()
+    }
+
+    /**
+     * Builds a close button slot.
+     * Supports: item OR material, + name (separate key)
+     */
+    private fun buildCloseSlot(basePath: String): Slot {
+        val itemString = plugin.configYml.getStringOrNull("$basePath.item")
+            ?: plugin.configYml.getString("$basePath.material")
+
+        val itemBuilder = ItemStackBuilder(Items.lookup(r(itemString)))
+
+        plugin.configYml.getStringOrNull("$basePath.name")?.let {
+            itemBuilder.setDisplayName(r(it))
+        }
+
+        val lore = plugin.configYml.getStringsOrNull("$basePath.lore")
+            ?: emptyList()
+        itemBuilder.addLoreLines(rAll(lore))
+
+        return Slot.builder(itemBuilder.build())
+            .onLeftClick { event, _ ->
+                event.whoClicked.closeInventory()
+            }.build()
     }
 
     private fun slot(pair: Category): Slot {

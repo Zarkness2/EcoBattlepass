@@ -77,7 +77,8 @@ battlepass-gui:
 
 # GUI Configuration for the Tiers GUI (/battlepass tiers)
 tiers-gui:
-  title: "EcoBattlepass: Tiers"
+  # Supports %page% and %max_page% placeholders
+  title: "EcoBattlepass: Tiers (%page%/%max_page%)"
 
   # Layout mode: "combined" (default, original behavior) or "split" (free on one row, premium on another)
   layout: combined
@@ -89,6 +90,10 @@ tiers-gui:
   # "behind-level"        - Empty tiers at or below the player's level show as claimed; others show normal
   # "all"                 - All empty tiers show as claimed regardless of level
   empty-tier-display-mode: "normal"
+
+  # Whether to open the tiers GUI at the player's current tier page.
+  # Set to false to always open at page 1.
+  open-at-current-tier: true
 
   mask:
     # The way the mask works is by having a list of materials
@@ -145,23 +150,64 @@ tiers-gui:
     # For example, increasing every 10 levels would be "ceil((%level% + 1) / 10)"
     # The value is always rounded down.
 
+    # Maximum item stack size for tier items (1-99).
+    # Values above 64 require Paper 1.20.5+ (uses setMaxStackSize).
+    # Invalid values will default to 64 with a console warning.
+    max-item-amount: 64
+
+    # Page changers support multiple formats:
+    # Format 1 (new, recommended):
+    #   item:
+    #     active: "orange_stained_glass_pane"
+    #     inactive: "gray_stained_glass_pane"
+    #   name:
+    #     active: "&aPrevious page"
+    #     inactive: "&7No more pages"
+    #
+    # Format 2 (inline name in item string):
+    #   item:
+    #     active: orange_stained_glass_pane name:"&aPrevious page"
+    #     inactive: gray_stained_glass_pane
+    #
+    # Format 3 (legacy, single material + name):
+    #   material: orange_stained_glass_pane
+    #   name: "&aPrevious page"
+    #
+    # All three formats are supported for backward compatibility.
+
     prev-page:
-      material: orange_stained_glass_pane
-      name: "&aPrevious page"
+      item:
+        active: orange_stained_glass_pane
+        inactive: gray_stained_glass_pane
+      name:
+        active: "&aPrevious page"
+        inactive: "&7No more pages"
+      lore:
+        active: []
+        inactive: []
       location:
         row: 6
         column: 4
 
     next-page:
-      material: orange_stained_glass_pane
-      name: "&aNext Page"
+      item:
+        active: orange_stained_glass_pane
+        inactive: gray_stained_glass_pane
+      name:
+        active: "&aNext Page"
+        inactive: "&7No more pages"
+      lore:
+        active: []
+        inactive: []
       location:
         row: 6
         column: 6
 
     close:
       enabled: true
-      material: barrier
+      # Supports both "material" (legacy) and "item" key.
+      # Also supports separate "name" key or inline name in item string.
+      item: barrier
       name: "&cClose"
       location:
         row: 6
@@ -288,8 +334,11 @@ categories-gui:
   buttons:
     next-page:
       item:
-        active: orange_stained_glass_pane name:"&aNext page"
+        active: orange_stained_glass_pane
         inactive: gray_stained_glass_pane
+      name:
+        active: "&aNext page"
+        inactive: ""
       lore:
         active: []
         inactive: []
@@ -297,8 +346,11 @@ categories-gui:
       column: 6
     prev-page:
       item:
-        active: orange_stained_glass_pane name:"&aPrevious page"
+        active: orange_stained_glass_pane
         inactive: gray_stained_glass_pane
+      name:
+        active: "&aPrevious page"
+        inactive: ""
       lore:
         active: []
         inactive: []
@@ -306,7 +358,7 @@ categories-gui:
       column: 4
     close:
       enabled: true
-      material: barrier
+      item: barrier
       name: "&cClose"
       row: 5
       column: 5
@@ -344,8 +396,11 @@ quests-gui:
   buttons:
     next-page:
       item:
-        active: orange_stained_glass_pane name:"&aNext page"
-        inactive: black_stained_glass_pane name:" "
+        active: orange_stained_glass_pane
+        inactive: black_stained_glass_pane
+      name:
+        active: "&aNext page"
+        inactive: " "
       lore:
         active: []
         inactive: []
@@ -353,8 +408,11 @@ quests-gui:
       column: 6
     prev-page:
       item:
-        active: orange_stained_glass_pane name:"&aPrevious page"
-        inactive: black_stained_glass_pane name:" "
+        active: orange_stained_glass_pane
+        inactive: black_stained_glass_pane
+      name:
+        active: "&aPrevious page"
+        inactive: " "
       lore:
         active: []
         inactive: []
@@ -362,7 +420,7 @@ quests-gui:
       column: 4
     close:
       enabled: true
-      material: barrier
+      item: barrier
       name: "&cClose"
       row: 5
       column: 5

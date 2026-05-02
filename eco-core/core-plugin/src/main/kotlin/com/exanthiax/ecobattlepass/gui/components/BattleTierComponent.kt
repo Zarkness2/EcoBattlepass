@@ -45,7 +45,9 @@ class BattleTierComponent(
     private val pass: BattlePass,
     private val tierType: TierType? = null,
     patternPath: String = "tiers-gui.mask.progression-pattern",
-    private val emptyTierDisplayMode: EmptyDisplayMode = EmptyDisplayMode.NORMAL
+    private val emptyTierDisplayMode: EmptyDisplayMode = EmptyDisplayMode.NORMAL,
+    private val maxItemAmount: Int =
+        (plugin.configYml.getIntOrNull("tiers-gui.buttons.max-item-amount") ?: 64).coerceIn(1, 99)
 ) : ProperLevelComponent() {
     override val pattern: List<String> = plugin.configYml.getStrings(patternPath)
     override val maxLevel = pass.maxLevel
@@ -142,13 +144,18 @@ class BattleTierComponent(
                 plugin.configYml.getString("tiers-gui.buttons.item-amount")
                     .replace("%level%", level.toString()),
                 placeholderContext(player = player)
-            ).roundToInt().coerceAtLeast(1)
+            ).roundToInt().coerceIn(1, maxItemAmount)
 
             val builtItem = ItemStackBuilder(Items.lookup(resolvedItem))
                 .setDisplayName(tier.format(displayName, player, tierType).firstOrNull() ?: "")
                 .addLoreLines(tier.format(displayLore, player, tierType))
                 .setAmount(amount)
                 .build()
+            if (maxItemAmount > 64) {
+                val meta = builtItem.itemMeta
+                meta.setMaxStackSize(maxItemAmount)
+                builtItem.itemMeta = meta
+            }
             builtItem
         }
 
