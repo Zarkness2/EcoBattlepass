@@ -8,27 +8,104 @@ name: "&6Example Battlepass" # The name of the battlepass, shown in the GUI
 battlepass:
   xp-formula: 1.5 * %level% + 5 # The formula to calculate the XP needed to reach the next tier
   max-tier: 100 # The maximum tier of the battlepass
-  command: 'battlepass' # The command to open the battlepass GUI
+  command: "battlepass" # The command to open the battlepass GUI
   premium-permission: "example.pass.premium" # The permission required to access the premium path of the battlepass
-  battlepass-start: 2025-01-01 00:00 # The date the battlepass starts. This must match the date format in config.yml, otherise you will get errors.
-  battlepass-end: 2026-01-01 00:00 # The date the battlepass ends. This must match the date format in config.yml, otherise you will get errors.
+  battlepass-start: 2025-01-01 00:00 # The date the battlepass starts. This must match the date format in config.yml, otherwise you will get errors.
+  battlepass-end: 2026-01-01 00:00 # The date the battlepass ends. This must match the date format in config.yml, otherwise you will get errors.
 
 # Below are the tier rewards for the battlepass.
 # The tier is the level the player needs to reach to unlock the rewards.
 # The rewards are the rewards the player will receive when they reach the tier.
 # You can add as many tiers and rewards as you want.
 # Not every tier needs to have a reward, if you want a tier to have no reward, just don't add that tier.
+#
+# Each reward has a "tier" field that determines which path it belongs to:
+#   tier: free    — All players can claim this reward.
+#   tier: premium — Only players with the premium permission can claim this reward.
+#
+# A tier can have:
+#   - Both free and premium rewards (most common)
+#   - Only free rewards (everyone can claim everything)
+#   - Only premium rewards (only premium players get rewards here)
+#
+# Claiming behavior:
+#   - In "combined" layout: clicking a tier claims all available rewards at once.
+#   - In "split" layout: free and premium rewards are shown separately and claimed independently.
+#   - Use /battlepass claim <tier> to claim both, or /battlepass claim <tier> free|premium to claim one type.
+#   - Use /battlepass claim all to claim all available tiers at once.
 tiers:
-  - tier: 1 # The tier number
+  # Tier with both free and premium rewards
+  - tier: 1
     rewards:
-      - id: coins_5000 # The ID of the reward
-        tier: free # If the reward is locked to a battlepass path. Set to "free" to allow all players to claim it.
-      - id: coins_10000 # The ID of the reward
-        tier: premium # The tier the reward is in (free/premium)
+      - id: coins_5000
+        tier: free
+      - id: coins_10000
+        tier: premium
       - id: golden_apple_3
         tier: premium
 
+  # Tier with only premium rewards
+  # Free players will see this tier but won't have anything to claim.
+  # In split layout, the free component will show this tier as "claimed" (no free rewards to claim).
   - tier: 5
     rewards:
       - id: xp_100
+        tier: premium
+
+  # Tier with only free rewards
+  # All players can claim this tier. Premium status is not required.
+  # In split layout, the premium component will show this tier as "claimed" (no premium rewards to claim).
+  - tier: 8
+    rewards:
+      - id: steak_32
+        tier: free
+
+  # Tier with per-tier display overrides
+  # You can override the item, name, and/or lore for any tier state.
+  # This overrides the global config in config.yml (tiers-gui.buttons.<state>).
+  # Only the fields you specify are overridden; the rest fall back to config.yml.
+  # Available states: unlocked, unlocked-free, premium-required, in-progress, locked, claimed
+  - tier: 10
+    display:
+      unlocked:
+        item: diamond
+        name: "&b&lMilestone Tier %tier_numeral%"
+        lore:
+          - "&7&m                    "
+          - "&b✦ &fMilestone Rewards:"
+          - "&7Free Tier:"
+          - "%free-rewards%"
+          - "&7Premium Tier:"
+          - "%premium-rewards%"
+          - "&7&m                    "
+          - "&aCLICK TO CLAIM"
+      claimed:
+        item: emerald glint
+        name: "&a&lMilestone Tier %tier_numeral% &7(Claimed)"
+        lore:
+          - "&7&m                    "
+          - "&a✔ &fMilestone Complete!"
+          - "&7Free Tier:"
+          - "%claimed-free-rewards%"
+          - "&7Premium Tier:"
+          - "%claimed-premium-rewards%"
+          - "&7&m                    "
+    rewards:
+      - id: coins_50000
+        tier: free
+      - id: totem_1
+        tier: premium
+
+  # You can also override only some fields (e.g., just the item)
+  # The name and lore will fall back to config.yml defaults.
+  - tier: 15
+    display:
+      unlocked:
+        item: gold_ingot
+      locked:
+        item: coal
+    rewards:
+      - id: coins_10000
+        tier: free
+      - id: coins_20000
         tier: premium

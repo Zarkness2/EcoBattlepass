@@ -8,15 +8,15 @@ priority: 0 # The priority of the category in the GUI. Categories are sorted by 
 gui-title: "Example Category" # The title of the GUI, this is displayed at the top of the GUI.
 
 name: "&8»&e Example Category" # The name of the category
-# Supports PlaceholderAPI placeholders, resolved per-player at display time. Examples:  
-# item: player_head name:%player_name%         # Player's own head  
-# item: diamond_sword                          # A simple item 
+# Supports PlaceholderAPI placeholders, resolved per-player at display time. Examples:
+# item: player_head name:%player_name%         # Player's own head
+# item: diamond_sword                          # A simple item
 item: nether_star 1 # The item to display in the GUI
 lore: # The lore of the category
   - "&a%completed%/%total% Complete"
   - "&7%time%"
 
-start-date: 2025-03-23 00:00 # The date the category starts %ecobattlepass_category_<id>_start_date%. This must match the date format in config.yml, otherise you will get errors.
+start-date: 2025-03-23 00:00 # The date the category starts %ecobattlepass_category_<id>_start_date%. This must match the date format in config.yml, otherwise you will get errors.
 duration: 100000 # The duration of the category in minutes, set to -1 for no end. This allows you to end/lock categories after a time frame.
 reset-time: 1440 # The amount of minutes between resets. # Set to 1440 for daily resets, set to -1 for no reset.
 
@@ -28,7 +28,9 @@ timer-format: # The format of the timer in the GUI.
 
 # The list of Quest ID(s) to be completed.
 # The order of this list is what determines the order within the Category GUI.
+# Quests can be free or premium (configured in each quest's yml file).
+# A category can contain a mix of free and premium quests.
 quests:
- - id: free_daily_quest_1
- - id: free_daily_quest_2
- - id: free_daily_quest_3
+  - id: free_daily_quest_1
+  - id: free_daily_quest_2
+  - id: free_daily_quest_3

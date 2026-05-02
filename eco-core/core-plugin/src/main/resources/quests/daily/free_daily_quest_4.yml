@@ -1,10 +1,7 @@
 display:
-  # Supports PlaceholderAPI placeholders, resolved per-player at display time. Examples:  
-  # item: player_head name:%player_name%         # Player's own head  
-  # item: diamond_sword                          # A simple item 
-  item:  player_head head:%player%
-  display-name: 'Daily Quest'
-  description: [ ]
+  item: player_head head:%player%
+  display-name: "Daily Quest"
+  description: []
 
 battlepass-points: 250
 battlepass-tier: free
@@ -12,5 +9,5 @@ battlepass-tier: free
 tasks: # The list of tasks
   - id: pvp
     xp: "round(random(2,8))"
-  
+
 task-amount: 1 # The amount of tasks that need to be completed
