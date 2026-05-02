@@ -28,7 +28,7 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         val pattern = plugin.configYml.getStrings("categories-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
             .setTitle(r(
-                    plugin.configYml.getFormattedString("categories-gui.title")
+                    plugin.configYml.getString("categories-gui.title")
                         .replace("%page%", page.toString())
                 )
             )
