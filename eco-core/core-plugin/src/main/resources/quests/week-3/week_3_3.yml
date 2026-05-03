@@ -16,4 +16,5 @@ tasks: # The list of tasks
   - id: visit_end # The ID of the task
     xp: 1 # The amount of XP required
 
+
 task-amount: 1 # The amount of tasks that need to be completed

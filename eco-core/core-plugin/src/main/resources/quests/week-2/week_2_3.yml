@@ -16,4 +16,5 @@ tasks: # The list of tasks
   - id: shear_light_blue_sheep # The ID of the task
     xp: round(random(16,32)) # The amount of XP required
 
+
 task-amount: 1 # The amount of tasks that need to be completed
