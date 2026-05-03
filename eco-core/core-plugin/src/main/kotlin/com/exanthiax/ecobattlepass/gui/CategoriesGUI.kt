@@ -72,7 +72,7 @@ class CategoriesGUI(
             val resolved = slotConfig.clone().apply {
                 val nameKey = getStringOrNull("name")
                 val itemStr = r(getString("item"))
-                // Si hay name separado y el item no tiene name inline, inyectarlo
+                // If there is a separate name and the item does not have an inline name, inject it
                 if (nameKey != null && !itemStr.contains("name:")) {
                     set("item", "$itemStr name:\"${r(nameKey)}\"")
                 } else {
