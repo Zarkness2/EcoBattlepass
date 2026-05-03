@@ -28,7 +28,7 @@ class QuestsGUI(
         val pattern = plugin.configYml.getStrings("quests-gui.mask.pattern")
         val menu = Menu.builder(pattern.size)
             .setTitle(r(
-                    plugin.configYml.getFormattedString("quests-gui.title")
+                    plugin.configYml.getString("quests-gui.title")
                         .replace("%page%", page.toString())
                         .replace("%category%", ChatColor.stripColor(category.title) ?: category.id)
                         .replace("%pass%", category.battlepass.name)
