@@ -82,7 +82,7 @@ object BattlePassGUI {
                     slot(
                         ItemStackBuilder(
                             Items.lookup(r(plugin.configYml.getString("battlepass-gui.buttons.close.material")))
-                        ).setDisplayName((r(plugin.configYml.getString("battlepass-gui.buttons.close.name")))
+                        ).setDisplayName(r(plugin.configYml.getString("battlepass-gui.buttons.close.name")))
                             .addLoreLines(rAll(plugin.configYml.getFormattedStrings("battlepass-gui.buttons.close.lore")))
                             .build()
                     ) {
