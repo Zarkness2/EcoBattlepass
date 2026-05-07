@@ -18,10 +18,10 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
                     val page: Int = 1, val backButton: Boolean = false) {
 
     // Helper para resolver placeholders internos + PAPI
-    private fun r(s: String) =
+    private fun applyInternalPlaceholders(s: String) =
         InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
 
-    private fun rAll(list: List<String>) =
+    private fun applyInternalPlaceholdersToAll(list: List<String>) =
         InternalPlaceholders.BattlePassPlaceholders.replaceAll(list, battlepass = pass, player = player)
 
     fun open() {
@@ -89,9 +89,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
                 plugin.configYml.getInt("categories-gui.buttons.close.column"),
                 Slot.builder(
                     ItemStackBuilder(
-                        Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.close.material")))
-                    ).setDisplayName(r(plugin.configYml.getString("categories-gui.buttons.close.name")))
-                        .addLoreLines(rAll(plugin.configYml.getStrings("categories-gui.buttons.close.lore")))
+                        Items.lookup(applyInternalPlaceholders(plugin.configYml.getString("categories-gui.buttons.close.material")))
+                    ).setDisplayName(applyInternalPlaceholders(plugin.configYml.getString("categories-gui.buttons.close.name")))
+                        .addLoreLines(applyInternalPlaceholdersToAll(plugin.configYml.getStrings("categories-gui.buttons.close.lore")))
                         .build()
                 ).onLeftClick { event, _ ->
                     event.whoClicked.closeInventory()
@@ -120,9 +120,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         val nextActive = page < getMaxPages()
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.next-page.item.${getActive(nextActive)}")))
+                Items.lookup(applyInternalPlaceholders(plugin.configYml.getString("categories-gui.buttons.next-page.item.${getActive(nextActive)}")))
             ).addLoreLines(
-                rAll(plugin.configYml.getStrings("categories-gui.buttons.next-page.lore.${getActive(nextActive)}"))
+                applyInternalPlaceholdersToAll(plugin.configYml.getStrings("categories-gui.buttons.next-page.lore.${getActive(nextActive)}"))
             ).build()
         )
         if (nextActive) {
@@ -137,9 +137,9 @@ class CategoriesGUI(private val player: Player, val pass: BattlePass,
         val prevActive = page > 1 || backButton
         val builder = Slot.builder(
             ItemStackBuilder(
-                Items.lookup(r(plugin.configYml.getString("categories-gui.buttons.prev-page.item.${getActive(prevActive)}")))
+                Items.lookup(applyInternalPlaceholders(plugin.configYml.getString("categories-gui.buttons.prev-page.item.${getActive(prevActive)}")))
             ).addLoreLines(
-                rAll(plugin.configYml.getStrings("categories-gui.buttons.prev-page.lore.${getActive(prevActive)}"))
+                applyInternalPlaceholdersToAll(plugin.configYml.getStrings("categories-gui.buttons.prev-page.lore.${getActive(prevActive)}"))
             ).build()
         )
 

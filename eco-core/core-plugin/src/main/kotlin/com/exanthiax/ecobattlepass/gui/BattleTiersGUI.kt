@@ -22,12 +22,12 @@ object BattleTiersGUI {
         val maskPattern = plugin.configYml.getStrings("tiers-gui.mask.pattern").toTypedArray()
         val maskItems = MaskItems.fromItemNames(plugin.configYml.getStrings("tiers-gui.mask.materials"))
 
-        fun r(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
+        fun applyInternalPlaceholders(s: String) = InternalPlaceholders.BattlePassPlaceholders.replace(s, battlepass = pass, player = player)
 
         val levelComponent = BattleTierComponent(plugin, pass)
 
         val menu = menu(maskPattern.size) {
-            title = r(plugin.configYml.getString("tiers-gui.title"))
+            title = applyInternalPlaceholders(plugin.configYml.getString("tiers-gui.title"))
                 .replace("%pass%", pass.name)
                 .formatEco()
 
@@ -48,7 +48,7 @@ object BattleTiersGUI {
                     plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.row"),
                     plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.column"),
                     slot(
-                        ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.prev-page.material"))))
+                        ItemStackBuilder(Items.lookup(applyInternalPlaceholders(plugin.configYml.getString("tiers-gui.buttons.prev-page.material"))))
                             .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.prev-page.name"))
                             .build()
                     ) {
@@ -62,7 +62,7 @@ object BattleTiersGUI {
                 plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.row"),
                 plugin.configYml.getInt("tiers-gui.buttons.prev-page.location.column"),
                 PageChanger(
-                    ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.prev-page.material"))))
+                    ItemStackBuilder(Items.lookup(applyInternalPlaceholders(plugin.configYml.getString("tiers-gui.buttons.prev-page.material"))))
                         .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.prev-page.name"))
                         .build(),
                     PageChanger.Direction.BACKWARDS
@@ -73,7 +73,7 @@ object BattleTiersGUI {
                 plugin.configYml.getInt("tiers-gui.buttons.next-page.location.row"),
                 plugin.configYml.getInt("tiers-gui.buttons.next-page.location.column"),
                 PageChanger(
-                    ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.next-page.material"))))
+                    ItemStackBuilder(Items.lookup(applyInternalPlaceholders(plugin.configYml.getString("tiers-gui.buttons.next-page.material"))))
                         .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.next-page.name"))
                         .build(),
                     PageChanger.Direction.FORWARDS
@@ -85,7 +85,7 @@ object BattleTiersGUI {
                     plugin.configYml.getInt("tiers-gui.buttons.close.location.row"),
                     plugin.configYml.getInt("tiers-gui.buttons.close.location.column"),
                     slot(
-                        ItemStackBuilder(Items.lookup(r(plugin.configYml.getString("tiers-gui.buttons.close.material"))))
+                        ItemStackBuilder(Items.lookup(applyInternalPlaceholders(plugin.configYml.getString("tiers-gui.buttons.close.material"))))
                             .setDisplayName(plugin.configYml.getString("tiers-gui.buttons.close.name"))
                             .build()
                     ) {
