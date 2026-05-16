@@ -21,7 +21,6 @@ import com.exanthiax.ecobattlepass.quests.BattleQuests
 import com.exanthiax.ecobattlepass.rewards.Rewards
 import com.exanthiax.ecobattlepass.tasks.BattleTasks
 import com.exanthiax.ecobattlepass.utils.BattlePassListener
-import com.exanthiax.ecobattlepass.api.hasPremium
 import com.willfp.eco.core.bstats.EcoMetricsChart
 import com.willfp.eco.core.command.impl.PluginCommand
 import org.bukkit.Bukkit
