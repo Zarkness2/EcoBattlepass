@@ -81,7 +81,7 @@ tiers-gui:
   title: "EcoBattlepass: Tiers (%page%/%max_page%)"
 
   # Layout mode: "combined" (default, original behavior) or "split" (free on one row, premium on another)
-  layout: combined
+  layout: "combined"
 
   # How to display tiers with no rewards:
   # "normal"              - Empty tiers show with their real state (original behavior)
@@ -213,6 +213,28 @@ tiers-gui:
         row: 6
         column: 5
 
+    # Reward placeholders documentation:
+    # These placeholders are used in tier button lore to display rewards
+    #
+    # %free-rewards% - Shows unclaimed free rewards (one per line)
+    # %premium-rewards% - Shows unclaimed premium rewards (one per line)
+    # %claimed-free-rewards% - Shows claimed free rewards (one per line)
+    # %claimed-premium-rewards% - Shows claimed premium rewards (one per line)
+    #
+    # IMPORTANT: These placeholders will show blank lines if there are no rewards of that type
+    # For example, if a tier has no free rewards, %free-rewards% will show nothing
+    # This is intentional - it allows you to conditionally show reward sections
+    #
+    # Dynamic placeholders for accessing specific reward lines (useful for custom GUI slots):
+    # tier_free_reward_{battlepass_id}_{tier_number}_{line_index}
+    # tier_premium_reward_{battlepass_id}_{tier_number}_{line_index}
+    # tier_claimed_free_reward_{battlepass_id}_{tier_number}_{line_index}
+    # tier_claimed_premium_reward_{battlepass_id}_{tier_number}_{line_index}
+    #
+    # Example: tier_free_reward_battlepass_10_0 returns the first line of free rewards for tier 10
+    # Example: tier_premium_reward_battlepass_10_1 returns the second line of premium rewards for tier 10
+    # If the line index is out of bounds, it returns an empty string
+
     empty-rewards-format: "&8&oNo rewards for this tier!"
     free-rewards-format: "&8»&r &9%reward%"
     premium-rewards-format: "&8»&r &6%reward%"
@@ -222,6 +244,30 @@ tiers-gui:
 
     # List of available placeholders:
     # https://exanthiax.gitbook.io/ecobattlepass/useful/internal-placeholders#battlepass-tiers-gui
+
+    # Per-level item overrides documentation:
+    # You can override button items for specific tiers in the battlepass tier config files
+    # Structure in tier config (e.g., battlepasses/yourpass/tiers/10.yml):
+    #   display:
+    #     {state}.item: material
+    #     {state}.name: display name
+    #     {state}.lore: [lore lines]
+    #
+    # States: unlocked, locked, in-progress, claimed, unlocked-free, premium-required, hidden
+    #
+    # For split mode, you can also specify track-specific overrides:
+    #   display:
+    #     free-track.{state}.item: material
+    #     premium-track.{state}.item: material
+    #
+    # Priority: track-specific override > generic override > track-specific config > default config
+    #
+    # Example (in tier config):
+    #   display:
+    #     unlocked.item: diamond
+    #     unlocked.name: "&6Special Tier %tier_numeral%"
+    #     free-track.unlocked.item: emerald
+    #     premium-track.unlocked.item: diamond
 
     # The different states a tier can be in
     # When only the free rewards are claimable.
@@ -303,6 +349,86 @@ tiers-gui:
         - "%claimed-premium-rewards%"
         - ""
         - "&aCLAIMED"
+
+    # Split mode button configurations (only used when layout: split)
+    # These override the default buttons for their respective tracks
+    free-track:
+      unlocked:
+        item: lime_stained_glass_pane
+        name: "&aFree Tier %tier_numeral%"
+        lore:
+          - "&7Free Rewards:"
+          - "%free-rewards%"
+          - ""
+          - "&aCLAIM"
+      locked:
+        item: red_stained_glass_pane
+        name: "&cFree Tier %tier_numeral%"
+        lore:
+          - "&7Free Rewards:"
+          - "%free-rewards%"
+          - ""
+          - "&cLOCKED"
+      in-progress:
+        item: yellow_stained_glass_pane
+        name: "&eFree Tier %tier_numeral%"
+        lore:
+          - "&7Free Rewards:"
+          - "%free-rewards%"
+          - ""
+          - "&fProgress:"
+          - "&8» &e%percentage_progress%%"
+      claimed:
+        item: green_stained_glass_pane glint
+        name: "&aFree Tier %tier_numeral%"
+        lore:
+          - "&7Free Rewards:"
+          - "%claimed-free-rewards%"
+          - ""
+          - "&aCLAIMED"
+
+    premium-track:
+      unlocked:
+        item: cyan_stained_glass_pane
+        name: "&bPremium Tier %tier_numeral%"
+        lore:
+          - "&7Premium Rewards:"
+          - "%premium-rewards%"
+          - ""
+          - "&aCLAIM"
+      premium-required:
+        item: orange_stained_glass_pane
+        name: "&6Premium Tier %tier_numeral%"
+        lore:
+          - "&7Premium Rewards:"
+          - "%premium-rewards%"
+          - ""
+          - "&6PURCHASE THE BATTLEPASS TO CLAIM"
+      locked:
+        item: red_stained_glass_pane
+        name: "&cPremium Tier %tier_numeral%"
+        lore:
+          - "&7Premium Rewards:"
+          - "%premium-rewards%"
+          - ""
+          - "&cLOCKED"
+      in-progress:
+        item: yellow_stained_glass_pane
+        name: "&ePremium Tier %tier_numeral%"
+        lore:
+          - "&7Premium Rewards:"
+          - "%premium-rewards%"
+          - ""
+          - "&fProgress:"
+          - "&8» &e%percentage_progress%%"
+      claimed:
+        item: green_stained_glass_pane glint
+        name: "&aPremium Tier %tier_numeral%"
+        lore:
+          - "&7Premium Rewards:"
+          - "%claimed-premium-rewards%"
+          - ""
+          - "&aCLAIMED"
 
     # Custom GUI slots; see here for a how-to: https://plugins.auxilor.io/all-plugins/custom-gui-slots
     custom-slots: []

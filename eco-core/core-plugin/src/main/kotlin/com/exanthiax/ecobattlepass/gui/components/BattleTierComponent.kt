@@ -132,14 +132,42 @@ class BattleTierComponent(
 
         fun item() = levelItemCache.get(Triple(player.uniqueId, level, tierType)) {
             val tier = pass.getTier(level) ?: BPTier(level, pass)
-            val displayItem = tier.config.getStringOrNull("display.$key.item")
+
+            // Determine the track-specific path for per-level overrides
+            val trackPath = when (tierType) {
+                TierType.FREE -> "free-track"
+                TierType.PREMIUM -> "premium-track"
+                null -> null
+            }
+
+            // Determine the base config path based on tierType (split mode) or combined mode
+            val basePath = when (tierType) {
+                TierType.FREE -> "tiers-gui.buttons.free-track.$key"
+                TierType.PREMIUM -> "tiers-gui.buttons.premium-track.$key"
+                null -> "tiers-gui.buttons.$key"
+            }
+
+            // Try per-level override first (tier-specific config)
+            // Priority: track-specific override > generic override > config.yml
+            val displayItem = (trackPath?.let { tier.config.getStringOrNull("display.$it.$key.item") })
+                ?: tier.config.getStringOrNull("display.$key.item")
+                ?: plugin.configYml.getStringOrNull("$basePath.item")
                 ?: plugin.configYml.getString("tiers-gui.buttons.$key.item")
-            val displayName = tier.config.getStringOrNull("display.$key.name")
+
+            val displayName = (trackPath?.let { tier.config.getStringOrNull("display.$it.$key.name") })
+                ?: tier.config.getStringOrNull("display.$key.name")
+                ?: plugin.configYml.getStringOrNull("$basePath.name")
                 ?: plugin.configYml.getString("tiers-gui.buttons.$key.name")
-            val displayLore = if (tier.config.has("display.$key.lore"))
+
+            val displayLore = if (trackPath != null && tier.config.has("display.$trackPath.$key.lore"))
+                tier.config.getStrings("display.$trackPath.$key.lore")
+            else if (tier.config.has("display.$key.lore"))
                 tier.config.getStrings("display.$key.lore")
+            else if (plugin.configYml.has("$basePath.lore"))
+                plugin.configYml.getStrings("$basePath.lore")
             else
                 plugin.configYml.getStrings("tiers-gui.buttons.$key.lore")
+
             val resolvedItem = InternalPlaceholders.TierPlaceholders.replace(displayItem, tier, pass, player)
             val amount = evaluateExpression(
                 plugin.configYml.getString("tiers-gui.buttons.item-amount")

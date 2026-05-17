@@ -140,6 +140,7 @@ object BattlePassGUI {
                     ConfigSlot(resolved)
                 )
             }
+        }
 
             menu.open(player)
         }
